@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🎯 Focus Assistant</h1>
+      <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot"></span>
+        <span id="statusText">Loading...</span>
+      </div>
+    </div>
+
+    <!-- AI Status Section -->
+    <div class="section ai-status" id="aiStatusSection">
+      <h2>AI Status</h2>
+      <div id="aiStatusDetails" class="status-grid">
+        <div class="status-item">
+          <span class="label">Language Model:</span>
+          <span class="value" id="aiLanguageModel">...</span>
+        </div>
+        <div class="status-item">
+          <span class="label">Summarizer:</span>
+          <span class="value" id="aiSummarizer">...</span>
+        </div>
+        <div class="status-item">
+          <span class="label">Writer:</span>
+          <span class="value" id="aiWriter">...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Goal Section -->
+    <div class="section goal-section" id="goalSection">
+      <h2>Current Goal</h2>
+      <div id="goalContent">
+        <div class="no-goal" id="noGoal">
+          <p>No active goal set</p>
+          <button class="btn btn-primary" id="setGoalBtn">Set Goal from Current Page</button>
+        </div>
+        <div class="goal-display" id="goalDisplay" style="display: none;">
+          <p class="goal-text" id="goalText"></p>
+          <div class="goal-keywords" id="goalKeywords"></div>
+          <div class="goal-actions">
+            <button class="btn btn-secondary" id="editGoalBtn">Edit</button>
+            <button class="btn btn-danger" id="clearGoalBtn">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Section -->
+    <div class="section session-section" id="sessionSection">
+      <h2>Focus Session</h2>
+      <div id="sessionContent">
+        <div class="no-session" id="noSession">
+          <p>No active session</p>
+          <button class="btn btn-primary" id="startSessionBtn" disabled>Start Session</button>
+          <p class="hint">Set a goal first to start a session</p>
+        </div>
+        <div class="session-display" id="sessionDisplay" style="display: none;">
+          <div class="session-stats">
+            <div class="stat">
+              <span class="stat-label">Duration</span>
+              <span class="stat-value" id="sessionDuration">0m</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Pages</span>
+              <span class="stat-value" id="sessionPages">0</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Distractions</span>
+              <span class="stat-value" id="sessionDistractions">0</span>
+            </div>
+          </div>
+          <button class="btn btn-danger" id="endSessionBtn">End Session</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section actions-section">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <button class="btn btn-secondary" id="viewHistoryBtn">View History</button>
+        <button class="btn btn-secondary" id="settingsBtn">Settings</button>
+      </div>
+    </div>
+
+    <!-- Session Review (shown after ending session) -->
+    <div class="section review-section" id="reviewSection" style="display: none;">
+      <h2>Session Review</h2>
+      <div id="reviewContent" class="review-content"></div>
+      <button class="btn btn-primary" id="closeReviewBtn">Close</button>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel" style="display: none;">
+      <h2>Settings</h2>
+      <div class="settings-form">
+        <label class="setting-item">
+          <input type="checkbox" id="enabledCheckbox">
+          <span>Enable Focus Assistant</span>
+        </label>
+        <label class="setting-item">
+          <input type="checkbox" id="autoGoalCheckbox">
+          <span>Automatic Goal Setting</span>
+        </label>
+        <label class="setting-item">
+          <input type="checkbox" id="detectionCheckbox">
+          <span>Distraction Detection</span>
+        </label>
+        <label class="setting-item">
+          <input type="checkbox" id="interventionCheckbox">
+          <span>Show Interventions</span>
+        </label>
+        
+        <div class="setting-item">
+          <label>Relevance Threshold: <span id="thresholdValue">0.6</span></label>
+          <input type="range" id="thresholdSlider" min="0.3" max="0.9" step="0.1" value="0.6">
+        </div>
+      </div>
+      <div class="settings-actions">
+        <button class="btn btn-primary" id="saveSettingsBtn">Save</button>
+        <button class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>
+      </div>
+    </div>
+
+    <!-- History Panel -->
+    <div class="history-panel" id="historyPanel" style="display: none;">
+      <h2>Session History</h2>
+      <div id="historyContent" class="history-content">
+        <p class="loading">Loading...</p>
+      </div>
+      <button class="btn btn-secondary" id="closeHistoryBtn">Close</button>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
+
