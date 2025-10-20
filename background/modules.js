@@ -1,7 +1,7 @@
 // Core modules for Chrome Focus Assistant
 // All 5 functional modules in one file for easy maintenance
 
-import { Logger, CONSTANTS, calculateSimilarity } from '../shared/utils.js';
+import { Logger, CONSTANTS, calculateSimilarity } from './utils.js';
 import { storage } from './storage.js';
 
 // ============================================================================

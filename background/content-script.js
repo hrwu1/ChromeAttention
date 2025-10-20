@@ -2,7 +2,7 @@
 // Extracts page content and monitors user activity
 
 // ============================================================================
-// UTILITY FUNCTIONS (duplicated from shared/utils.js for content script)
+// UTILITY FUNCTIONS (duplicated from utils.js for content script isolation)
 // ============================================================================
 
 function extractMainText(doc = document) {

@@ -20,24 +20,26 @@ ChromeAttention/
 ├── manifest.json                 # Manifest V3 configuration
 ├── README.md                     # This file
 ├── rules.json                    # DeclarativeNetRequest rules
-├── background/
-│   └── service-worker.js        # Background service worker + AI Manager
-├── content/
-│   └── content-script.js        # Content script + page analyzer
-├── core/
-│   ├── modules.js               # All 5 core modules (Goal, Detection, Learning, Intervention, Review)
-│   └── storage.js               # Storage manager + data schemas
-├── ui/
+├── background/                   # All extension scripts
+│   ├── service-worker.js        # Background service worker + AI Manager
+│   ├── modules.js               # All 5 focus modules (Goal, Detection, Learning, Intervention, Review)
+│   ├── storage.js               # Storage manager + data schemas
+│   ├── content-script.js        # Content script + page analyzer
+│   └── utils.js                 # Logger, constants, and helper functions
+├── ui/                           # User interface
 │   ├── popup.html               # Extension popup UI
 │   ├── popup.js                 # Popup controller
-│   └── popup.css                # Popup styling
-└── shared/
-    └── utils.js                 # Logger, constants, and helper functions
+│   ├── popup.css                # Popup styling
+│   └── blocked.html             # Blocked page display
+└── icons/                        # Extension icons
+    ├── icon16.png
+    ├── icon48.png
+    └── icon128.png
 ```
 
 ## Architecture Overview
 
-### Core Modules (core/modules.js)
+### Background Modules (background/modules.js)
 
 1. **GoalManager**: Automatically extracts and manages work/study goals
    - Uses Summarizer + Prompt APIs to infer goals from page content
@@ -235,7 +237,7 @@ const summary = await writer.write("Summarize this focus session...");
 
 ## Contributing
 
-This is a modular architecture designed for incremental development. Each core module in `core/modules.js` can be implemented and tested independently.
+This is a modular architecture designed for incremental development. Each module in `background/modules.js` can be implemented and tested independently.
 
 ## License
 

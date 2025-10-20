@@ -1,9 +1,9 @@
 // Background service worker for Chrome Focus Assistant
 // Includes AI Manager and message routing
 
-import { Logger, CONSTANTS, shouldExcludeUrl } from '../shared/utils.js';
-import { storage } from '../core/storage.js';
-import { GoalManager, DetectionEngine, LearningEngine, InterventionManager, ReviewGenerator } from '../core/modules.js';
+import { Logger, CONSTANTS, shouldExcludeUrl } from './utils.js';
+import { storage } from './storage.js';
+import { GoalManager, DetectionEngine, LearningEngine, InterventionManager, ReviewGenerator } from './modules.js';
 
 // ============================================================================
 // AI MANAGER CLASS

@@ -1,7 +1,7 @@
 // Storage manager for Chrome Focus Assistant
 // Handles all chrome.storage.local operations with schema validation
 
-import { Logger, CONSTANTS } from '../shared/utils.js';
+import { Logger, CONSTANTS } from './utils.js';
 
 // ============================================================================
 // DATA SCHEMAS
