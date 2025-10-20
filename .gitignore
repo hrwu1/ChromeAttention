@@ -50,3 +50,7 @@ yarn.lock
 *.bak
 *.backup
 
+# Our own files
+DEVELOPMENT.md
+PROJECT_SUMMARY.md
+QUICKSTART.md
