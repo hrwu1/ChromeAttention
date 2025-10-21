@@ -101,11 +101,11 @@ Please respond in this exact JSON format:
   /**
    * Fallback goal extraction without AI
    */
-  fallbackGoalExtraction(pageData, setAsActive = true) {
+  async fallbackGoalExtraction(pageData, setAsActive = true) {
     const goalText = `Working on: ${pageData.title}`;
     const keywords = this.extractKeywordsSimple(pageData.title + ' ' + pageData.text);
     
-    const newGoal = storage.addGoal({
+    const newGoal = await storage.addGoal({
       text: goalText,
       keywords: keywords,
       whitelist: [pageData.domain],

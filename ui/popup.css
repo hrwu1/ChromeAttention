@@ -118,6 +118,11 @@ body {
   margin-bottom: 0;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 6px;
+}
+
 .no-goals,
 .no-session {
   text-align: center;
@@ -197,6 +202,28 @@ body {
   line-height: 1.4;
   color: #333;
   word-wrap: break-word;
+}
+
+.goal-base-page {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.goal-base-page a {
+  color: #667eea;
+  text-decoration: none;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goal-base-page a:hover {
+  text-decoration: underline;
 }
 
 .goal-keywords {

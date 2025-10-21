@@ -40,13 +40,16 @@
     <div class="section goals-section" id="goalsSection">
       <div class="section-header">
         <h2>My Goals</h2>
-        <button class="btn btn-primary btn-small" id="addGoalBtn">+ Add Goal</button>
+        <div class="header-buttons">
+          <button class="btn btn-primary btn-small" id="setGoalFromPageBtn" title="Extract goal from current tab">📄 From Page</button>
+          <button class="btn btn-secondary btn-small" id="addGoalBtn" title="Manually add a goal">+ Manual</button>
+        </div>
       </div>
       
       <div id="goalsContent">
         <div class="no-goals" id="noGoals">
           <p>No goals yet</p>
-          <button class="btn btn-primary" id="setGoalFromPageBtn">Create from Current Page</button>
+          <p class="hint">Click "From Page" to extract a goal from your current tab, or "Manual" to create one yourself.</p>
         </div>
         
         <div class="goals-list" id="goalsList" style="display: none;">

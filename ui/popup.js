@@ -160,6 +160,15 @@ function createGoalElement(goal) {
   const goalText = document.createElement('div');
   goalText.className = 'goal-text';
   goalText.textContent = goal.text;
+  goalContent.appendChild(goalText);
+  
+  // Show base page info if available
+  if (goal.basePageTitle && goal.basePageUrl) {
+    const basePageInfo = document.createElement('div');
+    basePageInfo.className = 'goal-base-page';
+    basePageInfo.innerHTML = `📄 <a href="${goal.basePageUrl}" target="_blank" title="${goal.basePageUrl}">${goal.basePageTitle}</a>`;
+    goalContent.appendChild(basePageInfo);
+  }
   
   const goalKeywords = document.createElement('div');
   goalKeywords.className = 'goal-keywords';
@@ -171,8 +180,6 @@ function createGoalElement(goal) {
       goalKeywords.appendChild(tag);
     });
   }
-  
-  goalContent.appendChild(goalText);
   goalContent.appendChild(goalKeywords);
   
   const goalActions = document.createElement('div');
