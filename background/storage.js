@@ -14,6 +14,8 @@ const SCHEMAS = {
     keywords: [],          // Key terms related to the goal
     whitelist: [],         // Domains/URLs that are always relevant
     blacklist: [],         // Domains/URLs that are always distracting
+    basePageUrl: '',       // The URL where the goal was set
+    basePageTitle: '',     // The title of the base page
     createdAt: 0,
     updatedAt: 0
   },

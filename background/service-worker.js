@@ -417,13 +417,25 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
   if (buttonIndex === 0) {
     // "Back to Goal" clicked
     const goal = await goalManager.getCurrentGoal();
-    if (goal && goal.whitelist && goal.whitelist.length > 0) {
-      // Open first whitelisted domain or search for goal
-      const targetUrl = goal.whitelist[0].startsWith('http') ? 
-        goal.whitelist[0] : 
-        `https://www.google.com/search?q=${encodeURIComponent(goal.text)}`;
+    if (goal && goal.basePageUrl) {
+      // Try to find existing tab with the base page URL
+      const existingTabs = await chrome.tabs.query({ url: goal.basePageUrl });
       
-      chrome.tabs.create({ url: targetUrl });
+      if (existingTabs.length > 0) {
+        // Tab exists, switch to it
+        await chrome.tabs.update(existingTabs[0].id, { active: true });
+        await chrome.windows.update(existingTabs[0].windowId, { focused: true });
+        Logger.info('Switched to existing base page tab');
+      } else {
+        // Tab doesn't exist, open new one
+        await chrome.tabs.create({ url: goal.basePageUrl });
+        Logger.info('Opened new tab with base page URL');
+      }
+    } else if (goal) {
+      // Fallback: search for goal if no base page URL
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(goal.text)}`;
+      await chrome.tabs.create({ url: searchUrl });
+      Logger.info('No base page URL, opened search');
     }
   } else if (buttonIndex === 1) {
     // "It's Relevant" clicked - get current tab and submit feedback

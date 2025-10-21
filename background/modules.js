@@ -48,12 +48,14 @@ Please respond in this exact JSON format:
       const response = await this.aiManager.prompt(promptText);
       const goalData = this.parseGoalResponse(response);
       
-      // Step 3: Save the goal
+      // Step 3: Save the goal with base page info
       await storage.setCurrentGoal({
         text: goalData.goal,
         keywords: goalData.keywords,
         whitelist: goalData.suggestedWhitelist || [],
-        blacklist: goalData.suggestedBlacklist || []
+        blacklist: goalData.suggestedBlacklist || [],
+        basePageUrl: pageData.url,
+        basePageTitle: pageData.title
       });
       
       Logger.info('Goal extracted successfully', goalData);
@@ -109,7 +111,9 @@ Please respond in this exact JSON format:
       text: goal.goal,
       keywords: goal.keywords,
       whitelist: goal.suggestedWhitelist,
-      blacklist: goal.suggestedBlacklist
+      blacklist: goal.suggestedBlacklist,
+      basePageUrl: pageData.url,
+      basePageTitle: pageData.title
     });
     
     return goal;
