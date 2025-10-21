@@ -36,22 +36,26 @@
       </div>
     </div>
 
-    <!-- Current Goal Section -->
-    <div class="section goal-section" id="goalSection">
-      <h2>Current Goal</h2>
-      <div id="goalContent">
-        <div class="no-goal" id="noGoal">
-          <p>No active goal set</p>
-          <button class="btn btn-primary" id="setGoalBtn">Set Goal from Current Page</button>
+    <!-- Goals List Section -->
+    <div class="section goals-section" id="goalsSection">
+      <div class="section-header">
+        <h2>My Goals</h2>
+        <button class="btn btn-primary btn-small" id="addGoalBtn">+ Add Goal</button>
+      </div>
+      
+      <div id="goalsContent">
+        <div class="no-goals" id="noGoals">
+          <p>No goals yet</p>
+          <button class="btn btn-primary" id="setGoalFromPageBtn">Create from Current Page</button>
         </div>
-        <div class="goal-display" id="goalDisplay" style="display: none;">
-          <p class="goal-text" id="goalText"></p>
-          <div class="goal-keywords" id="goalKeywords"></div>
-          <div class="goal-actions">
-            <button class="btn btn-secondary" id="editGoalBtn">Edit</button>
-            <button class="btn btn-danger" id="clearGoalBtn">Clear</button>
-          </div>
+        
+        <div class="goals-list" id="goalsList" style="display: none;">
+          <!-- Goals will be dynamically inserted here -->
         </div>
+      </div>
+      
+      <div class="active-goals-summary" id="activeGoalsSummary" style="display: none;">
+        <span id="activeGoalsCount">0</span> active goal(s)
       </div>
     </div>
 
@@ -139,6 +143,25 @@
         <p class="loading">Loading...</p>
       </div>
       <button class="btn btn-secondary" id="closeHistoryBtn">Close</button>
+    </div>
+
+    <!-- Add/Edit Goal Dialog -->
+    <div class="modal" id="goalModal" style="display: none;">
+      <div class="modal-content">
+        <h2 id="goalModalTitle">Add New Goal</h2>
+        <div class="form-group">
+          <label for="goalTextInput">Goal Description</label>
+          <textarea id="goalTextInput" rows="3" placeholder="e.g., Research machine learning algorithms"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="goalKeywordsInput">Keywords (comma-separated)</label>
+          <input type="text" id="goalKeywordsInput" placeholder="e.g., machine learning, neural networks, AI">
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="saveGoalBtn">Save</button>
+          <button class="btn btn-secondary" id="cancelGoalBtn">Cancel</button>
+        </div>
+      </div>
     </div>
   </div>
 

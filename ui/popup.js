@@ -1,9 +1,12 @@
 // Popup UI controller for Chrome Focus Assistant
 
-let currentGoal = null;
+let allGoals = [];
+let activeGoals = [];
+let currentGoal = null;  // Legacy - first active goal
 let currentSession = null;
 let settings = null;
 let sessionUpdateInterval = null;
+let editingGoalId = null;  // Track which goal is being edited
 
 // ============================================================================
 // INITIALIZATION
@@ -28,12 +31,14 @@ async function loadData() {
     
     // Load all data
     const data = await sendMessage('GET_STORAGE_DATA');
-    currentGoal = data.goal;
+    allGoals = data.goals || [];
+    activeGoals = data.activeGoals || [];
+    currentGoal = data.goal;  // Legacy - first active goal
     currentSession = data.session;
     settings = data.settings;
     
     // Update UI
-    updateGoalUI();
+    updateGoalsUI();
     updateSessionUI();
     updateMainStatus();
     
@@ -73,12 +78,13 @@ function updateAIStatus(status) {
 
 function updateMainStatus() {
   const statusText = document.getElementById('statusText');
+  const activeCount = allGoals.filter(g => g.isActive && !g.isDone).length;
   
   if (currentSession) {
     statusText.textContent = 'Active Session';
     document.getElementById('statusIndicator').className = 'status-indicator active';
-  } else if (currentGoal) {
-    statusText.textContent = 'Goal Set';
+  } else if (activeCount > 0) {
+    statusText.textContent = `${activeCount} Active Goal${activeCount > 1 ? 's' : ''}`;
     document.getElementById('statusIndicator').className = 'status-indicator warning';
   } else {
     statusText.textContent = 'Ready';
@@ -86,35 +92,120 @@ function updateMainStatus() {
   }
 }
 
-function updateGoalUI() {
-  const noGoal = document.getElementById('noGoal');
-  const goalDisplay = document.getElementById('goalDisplay');
+function updateGoalsUI() {
+  const noGoals = document.getElementById('noGoals');
+  const goalsList = document.getElementById('goalsList');
   const startSessionBtn = document.getElementById('startSessionBtn');
+  const activeGoalsSummary = document.getElementById('activeGoalsSummary');
+  const activeGoalsCount = document.getElementById('activeGoalsCount');
   
-  if (currentGoal) {
-    noGoal.style.display = 'none';
-    goalDisplay.style.display = 'block';
+  if (allGoals.length === 0) {
+    noGoals.style.display = 'block';
+    goalsList.style.display = 'none';
+    activeGoalsSummary.style.display = 'none';
+    startSessionBtn.disabled = true;
+  } else {
+    noGoals.style.display = 'none';
+    goalsList.style.display = 'block';
+    activeGoalsSummary.style.display = 'block';
     
-    document.getElementById('goalText').textContent = currentGoal.text;
+    // Render goals list
+    goalsList.innerHTML = '';
     
-    // Show keywords
-    const keywordsContainer = document.getElementById('goalKeywords');
-    keywordsContainer.innerHTML = '';
-    if (currentGoal.keywords && currentGoal.keywords.length > 0) {
-      currentGoal.keywords.slice(0, 5).forEach(keyword => {
-        const tag = document.createElement('span');
-        tag.className = 'keyword-tag';
-        tag.textContent = keyword;
-        keywordsContainer.appendChild(tag);
+    // Separate active and completed goals
+    const activeGoalsList = allGoals.filter(g => !g.isDone);
+    const doneGoalsList = allGoals.filter(g => g.isDone);
+    
+    // Render active goals
+    activeGoalsList.forEach(goal => {
+      const goalItem = createGoalElement(goal);
+      goalsList.appendChild(goalItem);
+    });
+    
+    // Render completed goals (if any)
+    if (doneGoalsList.length > 0) {
+      const doneHeader = document.createElement('div');
+      doneHeader.className = 'goals-section-header';
+      doneHeader.textContent = 'Completed';
+      goalsList.appendChild(doneHeader);
+      
+      doneGoalsList.forEach(goal => {
+        const goalItem = createGoalElement(goal);
+        goalsList.appendChild(goalItem);
       });
     }
     
-    startSessionBtn.disabled = false;
-  } else {
-    noGoal.style.display = 'block';
-    goalDisplay.style.display = 'none';
-    startSessionBtn.disabled = true;
+    // Update active goals count
+    const activeCount = allGoals.filter(g => g.isActive && !g.isDone).length;
+    activeGoalsCount.textContent = activeCount;
+    startSessionBtn.disabled = activeCount === 0;
   }
+}
+
+function createGoalElement(goal) {
+  const goalItem = document.createElement('div');
+  goalItem.className = 'goal-item' + (goal.isDone ? ' goal-done' : '');
+  goalItem.dataset.goalId = goal.id;
+  
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'goal-checkbox';
+  checkbox.checked = goal.isActive && !goal.isDone;
+  checkbox.disabled = goal.isDone;
+  checkbox.addEventListener('change', () => handleToggleGoalActive(goal.id));
+  
+  const goalContent = document.createElement('div');
+  goalContent.className = 'goal-content';
+  
+  const goalText = document.createElement('div');
+  goalText.className = 'goal-text';
+  goalText.textContent = goal.text;
+  
+  const goalKeywords = document.createElement('div');
+  goalKeywords.className = 'goal-keywords';
+  if (goal.keywords && goal.keywords.length > 0) {
+    goal.keywords.slice(0, 5).forEach(keyword => {
+      const tag = document.createElement('span');
+      tag.className = 'keyword-tag';
+      tag.textContent = keyword;
+      goalKeywords.appendChild(tag);
+    });
+  }
+  
+  goalContent.appendChild(goalText);
+  goalContent.appendChild(goalKeywords);
+  
+  const goalActions = document.createElement('div');
+  goalActions.className = 'goal-actions';
+  
+  if (!goal.isDone) {
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-icon';
+    editBtn.textContent = '✏️';
+    editBtn.title = 'Edit';
+    editBtn.addEventListener('click', () => handleEditGoal(goal.id));
+    goalActions.appendChild(editBtn);
+    
+    const doneBtn = document.createElement('button');
+    doneBtn.className = 'btn-icon';
+    doneBtn.textContent = '✓';
+    doneBtn.title = 'Mark as done';
+    doneBtn.addEventListener('click', () => handleMarkGoalDone(goal.id));
+    goalActions.appendChild(doneBtn);
+  }
+  
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'btn-icon';
+  deleteBtn.textContent = '🗑️';
+  deleteBtn.title = 'Delete';
+  deleteBtn.addEventListener('click', () => handleDeleteGoal(goal.id));
+  goalActions.appendChild(deleteBtn);
+  
+  goalItem.appendChild(checkbox);
+  goalItem.appendChild(goalContent);
+  goalItem.appendChild(goalActions);
+  
+  return goalItem;
 }
 
 function updateSessionUI() {
@@ -160,9 +251,10 @@ function startSessionUpdateLoop() {
 
 function setupEventListeners() {
   // Goal actions
-  document.getElementById('setGoalBtn').addEventListener('click', handleSetGoal);
-  document.getElementById('editGoalBtn').addEventListener('click', handleEditGoal);
-  document.getElementById('clearGoalBtn').addEventListener('click', handleClearGoal);
+  document.getElementById('addGoalBtn').addEventListener('click', showAddGoalModal);
+  document.getElementById('setGoalFromPageBtn').addEventListener('click', handleSetGoalFromPage);
+  document.getElementById('saveGoalBtn').addEventListener('click', handleSaveGoal);
+  document.getElementById('cancelGoalBtn').addEventListener('click', hideGoalModal);
   
   // Session actions
   document.getElementById('startSessionBtn').addEventListener('click', handleStartSession);
@@ -190,7 +282,20 @@ function setupEventListeners() {
 // GOAL ACTIONS
 // ============================================================================
 
-async function handleSetGoal() {
+function showAddGoalModal() {
+  editingGoalId = null;
+  document.getElementById('goalModalTitle').textContent = 'Add New Goal';
+  document.getElementById('goalTextInput').value = '';
+  document.getElementById('goalKeywordsInput').value = '';
+  document.getElementById('goalModal').style.display = 'flex';
+}
+
+function hideGoalModal() {
+  document.getElementById('goalModal').style.display = 'none';
+  editingGoalId = null;
+}
+
+async function handleSetGoalFromPage() {
   try {
     showLoading('Extracting goal from current page...');
     
@@ -206,15 +311,17 @@ async function handleSetGoal() {
       throw new Error('Failed to extract page data');
     }
     
-    // Extract goal
-    const goal = await sendMessage('EXTRACT_GOAL', { pageData: response.data });
-    currentGoal = goal;
+    // Extract goal and add to list
+    const newGoal = await sendMessage('EXTRACT_GOAL', { 
+      pageData: response.data,
+      setAsActive: true 
+    });
     
-    updateGoalUI();
-    updateMainStatus();
+    // Reload data and update UI
+    await loadData();
     hideLoading();
     
-    showSuccess('Goal set successfully!');
+    showSuccess('Goal added successfully!');
     
   } catch (error) {
     console.error('Failed to set goal:', error);
@@ -223,42 +330,85 @@ async function handleSetGoal() {
   }
 }
 
-async function handleEditGoal() {
-  const newGoalText = prompt('Edit your goal:', currentGoal.text);
+async function handleSaveGoal() {
+  const goalText = document.getElementById('goalTextInput').value.trim();
+  const keywordsInput = document.getElementById('goalKeywordsInput').value.trim();
+  const keywords = keywordsInput ? keywordsInput.split(',').map(k => k.trim()) : [];
   
-  if (newGoalText && newGoalText.trim()) {
-    try {
-      await sendMessage('UPDATE_GOAL', {
-        text: newGoalText.trim(),
-        keywords: currentGoal.keywords
-      });
-      
-      currentGoal.text = newGoalText.trim();
-      updateGoalUI();
-      showSuccess('Goal updated!');
-      
-    } catch (error) {
-      console.error('Failed to update goal:', error);
-      showError('Failed to update goal');
-    }
-  }
-}
-
-async function handleClearGoal() {
-  if (!confirm('Are you sure you want to clear the current goal?')) {
+  if (!goalText) {
+    showError('Please enter a goal description');
     return;
   }
   
   try {
-    await sendMessage('CLEAR_GOAL');
-    currentGoal = null;
-    updateGoalUI();
-    updateMainStatus();
-    showSuccess('Goal cleared');
+    if (editingGoalId) {
+      // Update existing goal
+      await sendMessage('UPDATE_GOAL', {
+        goalId: editingGoalId,
+        updates: { text: goalText, keywords: keywords }
+      });
+      showSuccess('Goal updated!');
+    } else {
+      // Add new goal
+      await sendMessage('ADD_GOAL', {
+        goalData: { text: goalText, keywords: keywords, isActive: false }
+      });
+      showSuccess('Goal added!');
+    }
+    
+    hideGoalModal();
+    await loadData();
     
   } catch (error) {
-    console.error('Failed to clear goal:', error);
-    showError('Failed to clear goal');
+    console.error('Failed to save goal:', error);
+    showError('Failed to save goal');
+  }
+}
+
+async function handleEditGoal(goalId) {
+  const goal = allGoals.find(g => g.id === goalId);
+  if (!goal) return;
+  
+  editingGoalId = goalId;
+  document.getElementById('goalModalTitle').textContent = 'Edit Goal';
+  document.getElementById('goalTextInput').value = goal.text;
+  document.getElementById('goalKeywordsInput').value = goal.keywords ? goal.keywords.join(', ') : '';
+  document.getElementById('goalModal').style.display = 'flex';
+}
+
+async function handleDeleteGoal(goalId) {
+  if (!confirm('Are you sure you want to delete this goal?')) {
+    return;
+  }
+  
+  try {
+    await sendMessage('DELETE_GOAL', { goalId });
+    await loadData();
+    showSuccess('Goal deleted');
+  } catch (error) {
+    console.error('Failed to delete goal:', error);
+    showError('Failed to delete goal');
+  }
+}
+
+async function handleMarkGoalDone(goalId) {
+  try {
+    await sendMessage('MARK_GOAL_DONE', { goalId });
+    await loadData();
+    showSuccess('Goal marked as done!');
+  } catch (error) {
+    console.error('Failed to mark goal as done:', error);
+    showError('Failed to mark goal as done');
+  }
+}
+
+async function handleToggleGoalActive(goalId) {
+  try {
+    await sendMessage('TOGGLE_GOAL_ACTIVE', { goalId });
+    await loadData();
+  } catch (error) {
+    console.error('Failed to toggle goal:', error);
+    showError('Failed to toggle goal');
   }
 }
 

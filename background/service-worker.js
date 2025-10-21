@@ -295,13 +295,44 @@ async function handleMessage(message, sender) {
     
     // Goal Management
     case 'EXTRACT_GOAL':
-      return await goalManager.extractGoalFromPage(data.pageData);
+      return await goalManager.extractGoalFromPage(data.pageData, data.setAsActive !== false);
     
     case 'GET_CURRENT_GOAL':
       return await goalManager.getCurrentGoal();
     
+    case 'GET_ALL_GOALS':
+      return await goalManager.getAllGoals();
+    
+    case 'GET_ACTIVE_GOALS':
+      return await goalManager.getActiveGoals();
+    
+    case 'ADD_GOAL':
+      return await storage.addGoal(data.goalData);
+    
     case 'UPDATE_GOAL':
-      return await goalManager.updateGoal(data.text, data.keywords);
+      // Support both old and new format
+      if (data.goalId) {
+        return await goalManager.updateGoal(data.goalId, data.updates);
+      } else {
+        // Legacy support: update first active goal
+        const currentGoal = await goalManager.getCurrentGoal();
+        if (currentGoal) {
+          return await goalManager.updateGoal(currentGoal.id, {
+            text: data.text,
+            keywords: data.keywords
+          });
+        }
+        return null;
+      }
+    
+    case 'DELETE_GOAL':
+      return await goalManager.deleteGoal(data.goalId);
+    
+    case 'MARK_GOAL_DONE':
+      return await goalManager.markGoalDone(data.goalId);
+    
+    case 'TOGGLE_GOAL_ACTIVE':
+      return await goalManager.toggleGoalActive(data.goalId);
     
     case 'CLEAR_GOAL':
       // Check if there's an active session and end it first
@@ -314,16 +345,19 @@ async function handleMessage(message, sender) {
     
     // Detection
     case 'EVALUATE_PAGE':
-      const goal = await goalManager.getCurrentGoal();
-      if (!goal) {
-        return { score: 1.0, label: 'no-goal', reason: 'No active goal' };
+      // Evaluate against all active goals
+      const activeGoals = await goalManager.getActiveGoals();
+      if (activeGoals.length === 0) {
+        return { score: 1.0, label: 'no-goal', reason: 'No active goals', matchedGoals: [] };
       }
       
-      const evaluation = await detectionEngine.evaluatePage(data.pageData, goal);
+      const evaluation = await detectionEngine.evaluatePage(data.pageData, activeGoals);
       
       // Check if intervention needed
       if (await interventionManager.shouldIntervene(evaluation, data.pageData)) {
-        await interventionManager.showNotification(evaluation, goal);
+        // Use the first active goal for notification context
+        const firstActiveGoal = activeGoals[0];
+        await interventionManager.showNotification(evaluation, firstActiveGoal);
       }
       
       // Update session
@@ -368,11 +402,12 @@ async function handleMessage(message, sender) {
     
     // Session Management
     case 'START_SESSION':
-      const sessionGoal = await goalManager.getCurrentGoal();
-      if (!sessionGoal) {
-        throw new Error('No goal set. Please set a goal first.');
+      const sessionActiveGoals = await goalManager.getActiveGoals();
+      if (sessionActiveGoals.length === 0) {
+        throw new Error('No active goals. Please set and activate at least one goal first.');
       }
-      return await storage.startSession(sessionGoal.id);
+      // Use first active goal ID for session (can be enhanced later for multi-goal sessions)
+      return await storage.startSession(sessionActiveGoals[0].id);
     
     case 'END_SESSION':
       const endingSession = await storage.getCurrentSession();
@@ -412,7 +447,9 @@ async function handleMessage(message, sender) {
     // Storage
     case 'GET_STORAGE_DATA':
       return {
-        goal: await storage.getCurrentGoal(),
+        goal: await goalManager.getCurrentGoal(),  // Legacy - first active goal
+        goals: await goalManager.getAllGoals(),    // New - all goals
+        activeGoals: await goalManager.getActiveGoals(), // New - active goals
         session: await storage.getCurrentSession(),
         settings: await storage.getSettings(),
         profile: await storage.getUserProfile()

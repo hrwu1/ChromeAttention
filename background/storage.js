@@ -17,7 +17,9 @@ const SCHEMAS = {
     basePageUrl: '',       // The URL where the goal was set
     basePageTitle: '',     // The title of the base page
     createdAt: 0,
-    updatedAt: 0
+    updatedAt: 0,
+    isActive: false,       // Whether this goal is currently active/focused
+    isDone: false          // Whether this goal is completed
   },
   
   session: {
@@ -161,6 +163,115 @@ export class StorageManager {
   
   async clearCurrentGoal() {
     return await this.remove(CONSTANTS.STORAGE_KEYS.CURRENT_GOAL);
+  }
+  
+  // --------------------------------------------------------------------------
+  // Goals List Operations (New Multi-Goal System)
+  // --------------------------------------------------------------------------
+  
+  async getAllGoals() {
+    const goals = await this.get(CONSTANTS.STORAGE_KEYS.GOALS_LIST, []);
+    return goals;
+  }
+  
+  async getActiveGoals() {
+    const goals = await this.getAllGoals();
+    return goals.filter(goal => goal.isActive && !goal.isDone);
+  }
+  
+  async getGoalById(goalId) {
+    const goals = await this.getAllGoals();
+    return goals.find(goal => goal.id === goalId);
+  }
+  
+  async addGoal(goalData) {
+    const goals = await this.getAllGoals();
+    
+    const newGoal = {
+      ...SCHEMAS.goal,
+      ...goalData,
+      id: goalData.id || `goal-${Date.now()}`,
+      createdAt: goalData.createdAt || Date.now(),
+      updatedAt: Date.now(),
+      isActive: goalData.isActive !== undefined ? goalData.isActive : false,
+      isDone: false
+    };
+    
+    goals.push(newGoal);
+    await this.set(CONSTANTS.STORAGE_KEYS.GOALS_LIST, goals);
+    
+    Logger.info('Added new goal', newGoal);
+    return newGoal;
+  }
+  
+  async updateGoal(goalId, updates) {
+    const goals = await this.getAllGoals();
+    const goalIndex = goals.findIndex(goal => goal.id === goalId);
+    
+    if (goalIndex === -1) {
+      Logger.warn('Goal not found for update', goalId);
+      return null;
+    }
+    
+    goals[goalIndex] = {
+      ...goals[goalIndex],
+      ...updates,
+      updatedAt: Date.now()
+    };
+    
+    await this.set(CONSTANTS.STORAGE_KEYS.GOALS_LIST, goals);
+    Logger.debug('Updated goal', goals[goalIndex]);
+    
+    return goals[goalIndex];
+  }
+  
+  async deleteGoal(goalId) {
+    const goals = await this.getAllGoals();
+    const filteredGoals = goals.filter(goal => goal.id !== goalId);
+    
+    if (filteredGoals.length === goals.length) {
+      Logger.warn('Goal not found for deletion', goalId);
+      return false;
+    }
+    
+    await this.set(CONSTANTS.STORAGE_KEYS.GOALS_LIST, filteredGoals);
+    Logger.info('Deleted goal', goalId);
+    
+    return true;
+  }
+  
+  async markGoalDone(goalId) {
+    return await this.updateGoal(goalId, { isDone: true, isActive: false });
+  }
+  
+  async setActiveGoals(goalIds) {
+    const goals = await this.getAllGoals();
+    
+    // Deactivate all goals first
+    const updatedGoals = goals.map(goal => ({
+      ...goal,
+      isActive: goalIds.includes(goal.id) && !goal.isDone
+    }));
+    
+    await this.set(CONSTANTS.STORAGE_KEYS.GOALS_LIST, updatedGoals);
+    Logger.info('Set active goals', goalIds);
+    
+    return updatedGoals.filter(goal => goal.isActive);
+  }
+  
+  async toggleGoalActive(goalId) {
+    const goal = await this.getGoalById(goalId);
+    if (!goal) {
+      Logger.warn('Goal not found for toggle', goalId);
+      return null;
+    }
+    
+    if (goal.isDone) {
+      Logger.warn('Cannot activate a completed goal', goalId);
+      return goal;
+    }
+    
+    return await this.updateGoal(goalId, { isActive: !goal.isActive });
   }
   
   // --------------------------------------------------------------------------

@@ -16,15 +16,16 @@ export class GoalManager {
   /**
    * Automatically extract goal from current page content
    * Uses Summarizer to get key points, then Prompt to structure the goal
+   * Now adds to goals list instead of replacing current goal
    */
-  async extractGoalFromPage(pageData) {
+  async extractGoalFromPage(pageData, setAsActive = true) {
     try {
       Logger.info('Extracting goal from page', pageData.title);
       
       // Check if AI is available
       if (!this.aiManager.isAvailable()) {
         Logger.warn('AI not available, using fallback goal extraction');
-        return this.fallbackGoalExtraction(pageData);
+        return this.fallbackGoalExtraction(pageData, setAsActive);
       }
       
       // Step 1: Summarize the page content
@@ -48,22 +49,23 @@ Please respond in this exact JSON format:
       const response = await this.aiManager.prompt(promptText);
       const goalData = this.parseGoalResponse(response);
       
-      // Step 3: Save the goal with base page info
-      await storage.setCurrentGoal({
+      // Step 3: Add the goal to the goals list
+      const newGoal = await storage.addGoal({
         text: goalData.goal,
         keywords: goalData.keywords,
         whitelist: goalData.suggestedWhitelist || [],
         blacklist: goalData.suggestedBlacklist || [],
         basePageUrl: pageData.url,
-        basePageTitle: pageData.title
+        basePageTitle: pageData.title,
+        isActive: setAsActive
       });
       
-      Logger.info('Goal extracted successfully', goalData);
-      return goalData;
+      Logger.info('Goal extracted and added to list', newGoal);
+      return newGoal;
       
     } catch (error) {
       Logger.error('Failed to extract goal', error);
-      return this.fallbackGoalExtraction(pageData);
+      return this.fallbackGoalExtraction(pageData, setAsActive);
     }
   }
   
@@ -99,24 +101,21 @@ Please respond in this exact JSON format:
   /**
    * Fallback goal extraction without AI
    */
-  fallbackGoalExtraction(pageData) {
-    const goal = {
-      goal: `Working on: ${pageData.title}`,
-      keywords: this.extractKeywordsSimple(pageData.title + ' ' + pageData.text),
-      suggestedWhitelist: [pageData.domain],
-      suggestedBlacklist: []
-    };
+  fallbackGoalExtraction(pageData, setAsActive = true) {
+    const goalText = `Working on: ${pageData.title}`;
+    const keywords = this.extractKeywordsSimple(pageData.title + ' ' + pageData.text);
     
-    storage.setCurrentGoal({
-      text: goal.goal,
-      keywords: goal.keywords,
-      whitelist: goal.suggestedWhitelist,
-      blacklist: goal.suggestedBlacklist,
+    const newGoal = storage.addGoal({
+      text: goalText,
+      keywords: keywords,
+      whitelist: [pageData.domain],
+      blacklist: [],
       basePageUrl: pageData.url,
-      basePageTitle: pageData.title
+      basePageTitle: pageData.title,
+      isActive: setAsActive
     });
     
-    return goal;
+    return newGoal;
   }
   
   /**
@@ -137,27 +136,64 @@ Please respond in this exact JSON format:
   }
   
   /**
-   * Update current goal manually
+   * Update a goal manually
    */
-  async updateGoal(goalText, keywords = []) {
-    return await storage.setCurrentGoal({
-      text: goalText,
-      keywords: keywords
-    });
+  async updateGoal(goalId, updates) {
+    return await storage.updateGoal(goalId, updates);
   }
   
   /**
-   * Get current goal
+   * Get all goals
+   */
+  async getAllGoals() {
+    return await storage.getAllGoals();
+  }
+  
+  /**
+   * Get active goals (for backward compatibility, returns first active goal or null)
    */
   async getCurrentGoal() {
-    return await storage.getCurrentGoal();
+    const activeGoals = await storage.getActiveGoals();
+    return activeGoals.length > 0 ? activeGoals[0] : null;
   }
   
   /**
-   * Clear current goal
+   * Get all active goals
+   */
+  async getActiveGoals() {
+    return await storage.getActiveGoals();
+  }
+  
+  /**
+   * Delete a goal
+   */
+  async deleteGoal(goalId) {
+    return await storage.deleteGoal(goalId);
+  }
+  
+  /**
+   * Mark goal as done
+   */
+  async markGoalDone(goalId) {
+    return await storage.markGoalDone(goalId);
+  }
+  
+  /**
+   * Toggle goal active state
+   */
+  async toggleGoalActive(goalId) {
+    return await storage.toggleGoalActive(goalId);
+  }
+  
+  /**
+   * Clear current goal (legacy - kept for backward compatibility)
    */
   async clearGoal() {
-    return await storage.clearCurrentGoal();
+    // Deactivate all goals
+    const goals = await storage.getAllGoals();
+    const goalIds = goals.map(g => g.id);
+    await storage.setActiveGoals([]);
+    return true;
   }
 }
 
@@ -171,13 +207,74 @@ export class DetectionEngine {
   }
   
   /**
-   * Evaluate if current page is relevant to the goal
-   * Returns: {score, label, reason}
+   * Evaluate if current page is relevant to any active goals
+   * Returns: {score, label, reason, matchedGoals}
    */
-  async evaluatePage(pageData, goal) {
+  async evaluatePage(pageData, goals = null) {
     try {
       Logger.info('Evaluating page relevance', pageData.title);
       
+      // Get active goals if not provided
+      if (!goals) {
+        goals = await storage.getActiveGoals();
+      }
+      
+      // Handle array or single goal for backward compatibility
+      if (!Array.isArray(goals)) {
+        goals = [goals];
+      }
+      
+      // If no goals, return neutral
+      if (goals.length === 0) {
+        return {
+          score: 1.0,
+          label: 'no-goal',
+          reason: 'No active goals',
+          matchedGoals: []
+        };
+      }
+      
+      // Evaluate against each goal
+      const evaluations = [];
+      for (const goal of goals) {
+        const evaluation = await this.evaluatePageForGoal(pageData, goal);
+        evaluations.push({ ...evaluation, goalId: goal.id, goalText: goal.text });
+      }
+      
+      // Find the best match (highest score)
+      const bestMatch = evaluations.reduce((best, current) => 
+        current.score > best.score ? current : best
+      );
+      
+      // Return best evaluation with list of matched goals
+      const matchedGoals = evaluations
+        .filter(e => e.label === 'relevant')
+        .map(e => ({ id: e.goalId, text: e.goalText, score: e.score }));
+      
+      return {
+        score: bestMatch.score,
+        label: bestMatch.label,
+        reason: bestMatch.reason,
+        matchedGoals: matchedGoals,
+        evaluations: evaluations // Include all evaluations for reference
+      };
+      
+    } catch (error) {
+      Logger.error('Failed to evaluate page', error);
+      return {
+        score: 0.5,
+        label: 'error',
+        reason: 'Evaluation failed',
+        matchedGoals: []
+      };
+    }
+  }
+  
+  /**
+   * Evaluate page relevance for a single goal
+   */
+  async evaluatePageForGoal(pageData, goal) {
+    try {
       // Quick checks first
       const quickCheck = await this.quickRelevanceCheck(pageData, goal);
       if (quickCheck.confident) {
@@ -219,7 +316,7 @@ Respond in this exact JSON format:
       return evaluation;
       
     } catch (error) {
-      Logger.error('Failed to evaluate page', error);
+      Logger.error('Failed to evaluate page for goal', error);
       return this.fallbackDetection(pageData, goal);
     }
   }

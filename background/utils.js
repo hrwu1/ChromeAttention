@@ -24,7 +24,8 @@ export const CONSTANTS = {
   
   // Storage keys
   STORAGE_KEYS: {
-    CURRENT_GOAL: 'currentGoal',
+    CURRENT_GOAL: 'currentGoal',     // Legacy - kept for backward compatibility
+    GOALS_LIST: 'goalsList',         // Array of all goals
     USER_PROFILE: 'userProfile',
     FEEDBACK_HISTORY: 'feedbackHistory',
     SESSION_DATA: 'sessionData',
