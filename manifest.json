@@ -10,7 +10,8 @@
     "notifications",
     "declarativeNetRequest",
     "alarms",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   
   "host_permissions": [

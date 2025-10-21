@@ -1,6 +1,9 @@
 // Content script for Chrome Focus Assistant
 // Extracts page content and monitors user activity
 
+// Store the global analyzer instance
+let globalAnalyzer = null;
+
 // ============================================================================
 // UTILITY FUNCTIONS (duplicated from utils.js for content script isolation)
 // ============================================================================
@@ -133,7 +136,7 @@ class PageAnalyzer {
   /**
    * Perform page evaluation
    */
-  async performEvaluation() {
+  async performEvaluation(skipDwellCheck = false) {
     if (this.hasEvaluated) {
       return; // Already evaluated this page
     }
@@ -148,14 +151,14 @@ class PageAnalyzer {
       return;
     }
     
-    // Check dwell time
+    // Check dwell time (skip if triggered manually)
     const dwellTime = this.getDwellTime();
-    if (dwellTime < 5000) {
+    if (!skipDwellCheck && dwellTime < 3000) {
       console.log('[Focus Assistant] Not enough dwell time, skipping evaluation');
       return;
     }
     
-    console.log('[Focus Assistant] Evaluating page...');
+    console.log('[Focus Assistant] Evaluating page...', { url: this.pageData.url, dwellTime });
     
     try {
       // Send to background for evaluation
@@ -259,6 +262,9 @@ if (shouldExcludeUrl(window.location.href)) {
 function initializeAnalyzer(analyzer) {
   console.log('[Focus Assistant] Content script initialized');
   
+  // Store as global analyzer
+  globalAnalyzer = analyzer;
+  
   // Extract initial page data
   analyzer.extractPageData();
   
@@ -276,11 +282,27 @@ function initializeAnalyzer(analyzer) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[Focus Assistant] Received message:', message.type);
   
+  if (message.type === 'PING') {
+    // Respond to ping to confirm content script is loaded
+    sendResponse({ success: true, loaded: true });
+    return false;
+  }
+  
   if (message.type === 'START_EVALUATION') {
-    // Force immediate evaluation
-    const analyzer = new PageAnalyzer();
-    analyzer.extractPageData();
-    analyzer.performEvaluation()
+    // Use the global analyzer if available, or create a new one
+    if (!globalAnalyzer) {
+      globalAnalyzer = new PageAnalyzer();
+      globalAnalyzer.extractPageData();
+      globalAnalyzer.startActivityMonitoring();
+    }
+    
+    // Reset evaluation flag and perform evaluation
+    globalAnalyzer.hasEvaluated = false;
+    globalAnalyzer.dwellStartTime = Date.now();
+    globalAnalyzer.extractPageData(); // Update page data for new page
+    
+    // Skip dwell check for manually triggered evaluations
+    globalAnalyzer.performEvaluation(true)
       .then(() => sendResponse({ success: true }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
@@ -288,7 +310,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
   if (message.type === 'REQUEST_FEEDBACK') {
     // User clicked "It's Relevant" in notification
-    const analyzer = new PageAnalyzer();
+    const analyzer = globalAnalyzer || new PageAnalyzer();
     const pageData = analyzer.extractPageData();
     
     chrome.runtime.sendMessage({
@@ -308,7 +330,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
   if (message.type === 'EXTRACT_PAGE_DATA') {
     // Extract and return page data
-    const analyzer = new PageAnalyzer();
+    const analyzer = globalAnalyzer || new PageAnalyzer();
     const pageData = analyzer.extractPageData();
     sendResponse({ success: true, data: pageData });
     return false;

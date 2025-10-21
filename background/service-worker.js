@@ -459,6 +459,68 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 let lastActiveTabId = null;
 let tabActivationTime = Date.now();
 
+/**
+ * Inject content script if not already present
+ */
+async function ensureContentScript(tabId) {
+  try {
+    // Try to ping the content script
+    await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+    return true;
+  } catch (error) {
+    // Content script not present, inject it
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['background/content-script.js']
+      });
+      Logger.info('Injected content script into tab', tabId);
+      return true;
+    } catch (injectError) {
+      Logger.debug('Cannot inject content script', injectError.message);
+      return false;
+    }
+  }
+}
+
+/**
+ * Trigger page evaluation
+ */
+async function triggerPageEvaluation(tabId, url) {
+  // Check if should exclude
+  if (shouldExcludeUrl(url)) {
+    Logger.debug('Excluded URL, skipping evaluation', url);
+    return;
+  }
+  
+  // Get current goal and settings
+  const goal = await goalManager.getCurrentGoal();
+  const settings = await storage.getSettings();
+  
+  if (!goal || !settings.enabled || !settings.detectionEnabled) {
+    Logger.debug('Evaluation skipped: no goal or detection disabled');
+    return;
+  }
+  
+  // Ensure content script is loaded
+  const hasContentScript = await ensureContentScript(tabId);
+  if (!hasContentScript) {
+    Logger.debug('Cannot ensure content script for tab', tabId);
+    return;
+  }
+  
+  // Wait briefly for page to settle, then send evaluation message
+  setTimeout(async () => {
+    try {
+      await chrome.tabs.sendMessage(tabId, { type: 'START_EVALUATION' });
+      Logger.debug('Triggered evaluation for tab', tabId);
+    } catch (error) {
+      Logger.debug('Could not trigger evaluation', error.message);
+    }
+  }, 500); // 500ms delay for page to settle
+}
+
+// Listen for tab activation (switching tabs)
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   Logger.debug('Tab activated', activeInfo.tabId);
   
@@ -471,20 +533,23 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   lastActiveTabId = activeInfo.tabId;
   tabActivationTime = Date.now();
   
-  // Get current goal and check if we should evaluate
-  const goal = await goalManager.getCurrentGoal();
-  const settings = await storage.getSettings();
-  
-  if (goal && settings.enabled && settings.detectionEnabled) {
-    // Send message to content script to start evaluation
-    try {
-      await chrome.tabs.sendMessage(activeInfo.tabId, {
-        type: 'START_EVALUATION'
-      });
-    } catch (error) {
-      // Tab might not have content script yet
-      Logger.debug('Could not send message to tab', error.message);
+  // Get tab info and trigger evaluation
+  try {
+    const tab = await chrome.tabs.get(activeInfo.tabId);
+    if (tab.url) {
+      await triggerPageEvaluation(activeInfo.tabId, tab.url);
     }
+  } catch (error) {
+    Logger.debug('Error handling tab activation', error.message);
+  }
+});
+
+// Listen for page navigation (URL changes in current tab)
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // Only trigger when the page has finished loading
+  if (changeInfo.status === 'complete' && tab.url) {
+    Logger.debug('Tab updated (navigation)', { tabId, url: tab.url });
+    await triggerPageEvaluation(tabId, tab.url);
   }
 });
 
