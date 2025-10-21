@@ -304,6 +304,12 @@ async function handleMessage(message, sender) {
       return await goalManager.updateGoal(data.text, data.keywords);
     
     case 'CLEAR_GOAL':
+      // Check if there's an active session and end it first
+      const currentActiveSession = await storage.getCurrentSession();
+      if (currentActiveSession) {
+        Logger.info('Auto-ending session because goal was cleared');
+        await storage.endSession(null); // End without review
+      }
       return await goalManager.clearGoal();
     
     // Detection
@@ -351,10 +357,10 @@ async function handleMessage(message, sender) {
       );
       
       // Update session
-      const activeSession = await storage.getCurrentSession();
-      if (activeSession) {
+      const feedbackSession = await storage.getCurrentSession();
+      if (feedbackSession) {
         await storage.updateSession({
-          feedbackGiven: (activeSession.feedbackGiven || 0) + 1
+          feedbackGiven: (feedbackSession.feedbackGiven || 0) + 1
         });
       }
       
@@ -374,9 +380,19 @@ async function handleMessage(message, sender) {
         return null;
       }
       
-      // Generate review
+      // Generate review only if goal exists
       const sessionGoalData = await goalManager.getCurrentGoal();
-      const review = await reviewGenerator.generateReview(endingSession, sessionGoalData);
+      let review = null;
+      
+      if (sessionGoalData) {
+        try {
+          review = await reviewGenerator.generateReview(endingSession, sessionGoalData);
+        } catch (error) {
+          Logger.warn('Failed to generate review, ending session without review', error);
+        }
+      } else {
+        Logger.info('No goal available, ending session without review');
+      }
       
       return await storage.endSession(review);
     
