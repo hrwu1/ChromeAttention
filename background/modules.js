@@ -703,6 +703,18 @@ export class ReviewGenerator {
     try {
       Logger.info('Generating session review', session.id);
       
+      // Validate session times
+      if (!session.startTime || !session.endTime || session.endTime < session.startTime) {
+        Logger.error('Invalid session times', { startTime: session.startTime, endTime: session.endTime });
+        // Fix the session times if possible
+        if (!session.endTime) {
+          session.endTime = Date.now();
+        }
+        if (!session.startTime || session.startTime > session.endTime) {
+          session.startTime = session.endTime - 60000; // Assume 1 minute session
+        }
+      }
+      
       // Analyze pages by time spent
       const pageAnalysis = this.analyzePagesByTime(session.pagesVisited || []);
       
@@ -813,7 +825,21 @@ Format as 3 bullet points, clear and motivational.`;
    * Fallback review without AI
    */
   fallbackReview(session, goal, pageAnalysis) {
-    const duration = Math.floor((session.endTime - session.startTime) / 60000);
+    // Validate and calculate duration safely
+    let duration = 0;
+    if (session.startTime && session.endTime && session.endTime > session.startTime) {
+      duration = Math.floor((session.endTime - session.startTime) / 60000);
+    } else {
+      Logger.warn('Invalid session duration in fallback review', { 
+        startTime: session.startTime, 
+        endTime: session.endTime 
+      });
+      // Estimate based on page dwell times if available
+      if (pageAnalysis && pageAnalysis.totalRelevantTime + pageAnalysis.totalDistractionTime > 0) {
+        duration = Math.floor((pageAnalysis.totalRelevantTime + pageAnalysis.totalDistractionTime) / 60000);
+      }
+    }
+    
     const pagesCount = session.pagesVisited?.length || 0;
     const distractionsCount = session.distractions || 0;
     

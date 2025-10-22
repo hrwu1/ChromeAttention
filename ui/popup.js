@@ -527,8 +527,13 @@ async function showHistory() {
     }
     
     historyContent.innerHTML = history.map(session => {
-      const duration = Math.floor((session.endTime - session.startTime) / 60000);
-      const date = new Date(session.startTime).toLocaleDateString();
+      // Safely calculate duration
+      let duration = 0;
+      if (session.startTime && session.endTime && session.endTime > session.startTime) {
+        duration = Math.floor((session.endTime - session.startTime) / 60000);
+      }
+      
+      const date = session.startTime ? new Date(session.startTime).toLocaleDateString() : 'Unknown date';
       
       return `
         <div class="history-item">
@@ -563,7 +568,14 @@ function showReview(session) {
   const reviewContent = document.getElementById('reviewContent');
   
   if (session.review) {
-    const duration = Math.floor((session.endTime - session.startTime) / 60000);
+    // Safely calculate duration
+    let duration = 0;
+    if (session.startTime && session.endTime && session.endTime > session.startTime) {
+      duration = Math.floor((session.endTime - session.startTime) / 60000);
+    } else {
+      console.warn('Invalid session times', { startTime: session.startTime, endTime: session.endTime });
+    }
+    
     const pageAnalysis = session.review.pageAnalysis;
     
     let html = `

@@ -289,12 +289,18 @@ export class StorageManager {
       history: []
     });
     
+    const now = Date.now();
     const newSession = {
       ...SCHEMAS.session,
-      id: `session-${Date.now()}`,
+      id: `session-${now}`,
       goalId,
-      startTime: Date.now(),
-      active: true
+      startTime: now,
+      endTime: 0,  // Explicitly set to 0, will be set on end
+      active: true,
+      pagesVisited: [],
+      distractions: 0,
+      interventions: 0,
+      feedbackGiven: 0
     };
     
     sessionData.current = newSession;
