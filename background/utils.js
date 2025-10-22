@@ -216,3 +216,33 @@ export function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * Extract base URL from full URL (removes query parameters and fragments)
+ * This helps group similar pages together
+ * Example: "https://example.com/page?id=1#section" -> "https://example.com/page"
+ */
+export function getBaseUrl(url) {
+  try {
+    const urlObj = new URL(url);
+    // Return protocol + hostname + pathname (no query or hash)
+    return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
+  } catch (e) {
+    Logger.warn('Failed to parse URL', url);
+    return url; // Return original if parsing fails
+  }
+}
+
+/**
+ * Get a human-readable display name for a URL
+ */
+export function getDisplayUrl(url) {
+  try {
+    const urlObj = new URL(url);
+    // Remove protocol and trailing slash for cleaner display
+    let display = urlObj.host + urlObj.pathname;
+    return display.endsWith('/') ? display.slice(0, -1) : display;
+  } catch (e) {
+    return url;
+  }
+}
+

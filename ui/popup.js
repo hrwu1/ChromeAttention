@@ -588,9 +588,14 @@ function showReview(session) {
       if (pageAnalysis.topNormalPages.length > 0) {
         pageAnalysis.topNormalPages.slice(0, 5).forEach(page => {
           const timeSpent = formatDwellTime(page.dwellTime);
+          const displayUrl = page.baseUrl || page.url;
+          const visitInfo = page.visitCount > 1 ? ` (${page.visitCount} visits)` : '';
           html += `
             <div class="page-item">
-              <div class="page-title" title="${page.url}">${truncateText(page.title, 40)}</div>
+              <div class="page-info">
+                <div class="page-title" title="${displayUrl}">${truncateText(page.title, 40)}</div>
+                ${visitInfo ? `<div class="page-visits">${visitInfo}</div>` : ''}
+              </div>
               <div class="page-time">${timeSpent}</div>
             </div>
           `;
@@ -611,9 +616,14 @@ function showReview(session) {
       if (pageAnalysis.topDistractionPages.length > 0) {
         pageAnalysis.topDistractionPages.slice(0, 5).forEach(page => {
           const timeSpent = formatDwellTime(page.dwellTime);
+          const displayUrl = page.baseUrl || page.url;
+          const visitInfo = page.visitCount > 1 ? ` (${page.visitCount} visits)` : '';
           html += `
             <div class="page-item distraction">
-              <div class="page-title" title="${page.url}">${truncateText(page.title, 40)}</div>
+              <div class="page-info">
+                <div class="page-title" title="${displayUrl}">${truncateText(page.title, 40)}</div>
+                ${visitInfo ? `<div class="page-visits">${visitInfo}</div>` : ''}
+              </div>
               <div class="page-time">${timeSpent}</div>
             </div>
           `;

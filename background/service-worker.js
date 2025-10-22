@@ -1,7 +1,7 @@
 // Background service worker for Chrome Focus Assistant
 // Includes AI Manager and message routing
 
-import { Logger, CONSTANTS, shouldExcludeUrl } from './utils.js';
+import { Logger, CONSTANTS, shouldExcludeUrl, getBaseUrl } from './utils.js';
 import { storage } from './storage.js';
 import { GoalManager, DetectionEngine, LearningEngine, InterventionManager, ReviewGenerator } from './modules.js';
 
@@ -365,8 +365,11 @@ async function handleMessage(message, sender) {
       if (session) {
         const pages = session.pagesVisited || [];
         
-        // Check if this page already exists
-        const existingPageIndex = pages.findIndex(p => p.url === data.pageData.url);
+        // Use base URL for grouping (without query params/fragments)
+        const baseUrl = getBaseUrl(data.pageData.url);
+        
+        // Check if this base URL already exists
+        const existingPageIndex = pages.findIndex(p => p.baseUrl === baseUrl);
         
         if (existingPageIndex >= 0) {
           // Update relevance score if it changed significantly
@@ -375,10 +378,14 @@ async function handleMessage(message, sender) {
             existingPage.relevanceScore = evaluation.score;
             existingPage.lastEvaluationTime = Date.now();
           }
+          // Update with latest full URL and title
+          existingPage.url = data.pageData.url;
+          existingPage.title = data.pageData.title;
         } else {
           // Add new page entry
           pages.push({
             url: data.pageData.url,
+            baseUrl: baseUrl,
             title: data.pageData.title,
             domain: data.pageData.domain,
             relevanceScore: evaluation.score,
@@ -573,19 +580,24 @@ async function recordPageDwellTime() {
   
   const pages = session.pagesVisited || [];
   
-  // Find existing entry for this URL
-  const existingPage = pages.find(p => p.url === currentPageUrl);
+  // Use base URL for grouping (without query params/fragments)
+  const baseUrl = getBaseUrl(currentPageUrl);
+  
+  // Find existing entry for this base URL
+  const existingPage = pages.find(p => p.baseUrl === baseUrl);
   
   if (existingPage) {
     // Update existing entry with accumulated time
     existingPage.dwellTime = (existingPage.dwellTime || 0) + dwellTime;
     existingPage.lastVisitTime = Date.now();
     existingPage.visitCount = (existingPage.visitCount || 1) + 1;
+    // Keep the most recent full URL as example
+    existingPage.url = currentPageUrl;
   }
   // If not found, it means this page hasn't been evaluated yet, skip for now
   
   await storage.updateSession({ pagesVisited: pages });
-  Logger.debug(`Recorded ${dwellTime}ms dwell time for ${currentPageUrl}`);
+  Logger.debug(`Recorded ${dwellTime}ms dwell time for ${baseUrl}`);
 }
 
 /**
