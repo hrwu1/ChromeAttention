@@ -563,17 +563,97 @@ function showReview(session) {
   const reviewContent = document.getElementById('reviewContent');
   
   if (session.review) {
-    reviewContent.innerHTML = `
+    const duration = Math.floor((session.endTime - session.startTime) / 60000);
+    const pageAnalysis = session.review.pageAnalysis;
+    
+    let html = `
       <div class="review-text">${session.review.summary.replace(/\n/g, '<br>')}</div>
       <div class="review-stats">
-        <p><strong>Duration:</strong> ${Math.floor((session.endTime - session.startTime) / 60000)} minutes</p>
+        <p><strong>Duration:</strong> ${duration} minutes</p>
         <p><strong>Pages Visited:</strong> ${session.pagesVisited?.length || 0}</p>
         <p><strong>Distractions:</strong> ${session.distractions || 0}</p>
-      </div>
     `;
+    
+    // Add page analysis if available
+    if (pageAnalysis) {
+      html += `
+        <p><strong>Focus Score:</strong> ${pageAnalysis.focusPercentage}%</p>
+      </div>
+      
+      <div class="review-section">
+        <h4>⭐ Top Relevant Pages</h4>
+        <div class="page-list">
+      `;
+      
+      if (pageAnalysis.topNormalPages.length > 0) {
+        pageAnalysis.topNormalPages.slice(0, 5).forEach(page => {
+          const timeSpent = formatDwellTime(page.dwellTime);
+          html += `
+            <div class="page-item">
+              <div class="page-title" title="${page.url}">${truncateText(page.title, 40)}</div>
+              <div class="page-time">${timeSpent}</div>
+            </div>
+          `;
+        });
+      } else {
+        html += '<p class="no-data">No relevant pages tracked</p>';
+      }
+      
+      html += `
+        </div>
+      </div>
+      
+      <div class="review-section">
+        <h4>⚠️ Top Distraction Pages</h4>
+        <div class="page-list">
+      `;
+      
+      if (pageAnalysis.topDistractionPages.length > 0) {
+        pageAnalysis.topDistractionPages.slice(0, 5).forEach(page => {
+          const timeSpent = formatDwellTime(page.dwellTime);
+          html += `
+            <div class="page-item distraction">
+              <div class="page-title" title="${page.url}">${truncateText(page.title, 40)}</div>
+              <div class="page-time">${timeSpent}</div>
+            </div>
+          `;
+        });
+      } else {
+        html += '<p class="no-data">No distractions! Great job! 🎉</p>';
+      }
+      
+      html += `
+        </div>
+      </div>
+      `;
+    } else {
+      html += '</div>';
+    }
+    
+    reviewContent.innerHTML = html;
   } else {
     reviewContent.innerHTML = '<p>Session completed successfully!</p>';
   }
+}
+
+function formatDwellTime(ms) {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes % 60}m`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`;
+  } else {
+    return `${seconds}s`;
+  }
+}
+
+function truncateText(text, maxLength) {
+  if (!text) return 'Untitled';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
 }
 
 function hideReview() {

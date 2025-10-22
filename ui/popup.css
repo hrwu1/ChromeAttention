@@ -479,6 +479,59 @@ body {
   margin-bottom: 6px;
 }
 
+.review-section {
+  margin-top: 16px;
+}
+
+.review-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.page-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #f9f9f9;
+  border-radius: 5px;
+  border-left: 3px solid #4caf50;
+  transition: background 0.2s;
+}
+
+.page-item:hover {
+  background: #f0f0f0;
+}
+
+.page-item.distraction {
+  border-left-color: #ff9800;
+}
+
+.page-title {
+  flex: 1;
+  font-size: 12px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+.page-time {
+  font-size: 12px;
+  font-weight: 600;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
 /* Utility Classes */
 .loading,
 .no-data,

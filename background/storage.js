@@ -27,7 +27,7 @@ const SCHEMAS = {
     goalId: '',
     startTime: 0,
     endTime: 0,
-    pagesVisited: [],      // Array of {url, title, relevanceScore, dwellTime}
+    pagesVisited: [],      // Array of {url, title, domain, relevanceScore, timestamp, lastEvaluationTime, dwellTime, visitCount, lastVisitTime}
     distractions: 0,       // Count of distraction alerts
     interventions: 0,      // Count of interventions taken
     feedbackGiven: 0,      // Count of user feedback

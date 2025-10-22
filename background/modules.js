@@ -703,14 +703,26 @@ export class ReviewGenerator {
     try {
       Logger.info('Generating session review', session.id);
       
+      // Analyze pages by time spent
+      const pageAnalysis = this.analyzePagesByTime(session.pagesVisited || []);
+      
       if (!this.aiManager.isAvailable()) {
-        return this.fallbackReview(session, goal);
+        return this.fallbackReview(session, goal, pageAnalysis);
       }
       
       // Build session summary
       const duration = session.endTime - session.startTime;
       const pagesCount = session.pagesVisited?.length || 0;
       const distractionsCount = session.distractions || 0;
+      
+      // Build detailed page breakdown for AI
+      const topNormalPages = pageAnalysis.topNormalPages.slice(0, 3)
+        .map(p => `${p.title} (${this.formatTime(p.dwellTime)})`)
+        .join(', ');
+      
+      const topDistractionPages = pageAnalysis.topDistractionPages.slice(0, 3)
+        .map(p => `${p.title} (${this.formatTime(p.dwellTime)})`)
+        .join(', ');
       
       const promptText = `Generate a brief focus session review in English.
 
@@ -720,9 +732,15 @@ Pages visited: ${pagesCount}
 Distractions detected: ${distractionsCount}
 Interventions: ${session.interventions || 0}
 
+Time on relevant pages: ${this.formatTime(pageAnalysis.totalRelevantTime)}
+Top relevant pages: ${topNormalPages || 'None'}
+
+Time on distracting pages: ${this.formatTime(pageAnalysis.totalDistractionTime)}
+Top distracting pages: ${topDistractionPages || 'None'}
+
 Create a review with:
-1. A brief summary of the session (1-2 sentences)
-2. Key accomplishment or observation
+1. A brief summary highlighting productivity (1-2 sentences)
+2. Key accomplishment or observation about focus quality
 3. One actionable suggestion for the next session
 
 Format as 3 bullet points, clear and motivational.`;
@@ -732,29 +750,85 @@ Format as 3 bullet points, clear and motivational.`;
       Logger.info('Review generated', review);
       return {
         summary: review,
+        pageAnalysis: pageAnalysis,
         timestamp: Date.now()
       };
       
     } catch (error) {
       Logger.error('Failed to generate review', error);
-      return this.fallbackReview(session, goal);
+      return this.fallbackReview(session, goal, this.analyzePagesByTime(session.pagesVisited || []));
+    }
+  }
+  
+  /**
+   * Analyze pages by time spent and categorize them
+   */
+  analyzePagesByTime(pages) {
+    const settings = CONSTANTS.RELEVANCE_THRESHOLD || 0.6;
+    
+    // Separate pages into relevant and distracting
+    const relevantPages = pages.filter(p => p.relevanceScore >= settings);
+    const distractingPages = pages.filter(p => p.relevanceScore < settings);
+    
+    // Sort by dwell time (descending)
+    const topNormalPages = relevantPages
+      .sort((a, b) => (b.dwellTime || 0) - (a.dwellTime || 0));
+    
+    const topDistractionPages = distractingPages
+      .sort((a, b) => (b.dwellTime || 0) - (a.dwellTime || 0));
+    
+    // Calculate total time spent
+    const totalRelevantTime = relevantPages.reduce((sum, p) => sum + (p.dwellTime || 0), 0);
+    const totalDistractionTime = distractingPages.reduce((sum, p) => sum + (p.dwellTime || 0), 0);
+    
+    return {
+      topNormalPages,
+      topDistractionPages,
+      totalRelevantTime,
+      totalDistractionTime,
+      focusPercentage: totalRelevantTime + totalDistractionTime > 0 
+        ? (totalRelevantTime / (totalRelevantTime + totalDistractionTime) * 100).toFixed(1)
+        : 100
+    };
+  }
+  
+  /**
+   * Format time in milliseconds to human-readable format
+   */
+  formatTime(ms) {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    } else {
+      return `${seconds}s`;
     }
   }
   
   /**
    * Fallback review without AI
    */
-  fallbackReview(session, goal) {
+  fallbackReview(session, goal, pageAnalysis) {
     const duration = Math.floor((session.endTime - session.startTime) / 60000);
     const pagesCount = session.pagesVisited?.length || 0;
     const distractionsCount = session.distractions || 0;
     
-    const summary = `• You worked on "${goal.text}" for ${duration} minutes\n` +
-                   `• Visited ${pagesCount} pages with ${distractionsCount} distractions detected\n` +
-                   `• ${distractionsCount < 3 ? 'Great focus!' : 'Try reducing distractions next time'}`;
+    let summary = `• You worked on "${goal.text}" for ${duration} minutes\n`;
+    summary += `• Visited ${pagesCount} pages with ${distractionsCount} distractions detected\n`;
+    
+    if (pageAnalysis) {
+      summary += `• Focus score: ${pageAnalysis.focusPercentage}% - ${pageAnalysis.focusPercentage >= 70 ? 'Great focus!' : 'Try reducing distractions next time'}`;
+    } else {
+      summary += `• ${distractionsCount < 3 ? 'Great focus!' : 'Try reducing distractions next time'}`;
+    }
     
     return {
       summary,
+      pageAnalysis: pageAnalysis || this.analyzePagesByTime(session.pagesVisited || []),
       timestamp: Date.now()
     };
   }

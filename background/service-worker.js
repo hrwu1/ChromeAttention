@@ -364,12 +364,31 @@ async function handleMessage(message, sender) {
       const session = await storage.getCurrentSession();
       if (session) {
         const pages = session.pagesVisited || [];
-        pages.push({
-          url: data.pageData.url,
-          title: data.pageData.title,
-          relevanceScore: evaluation.score,
-          timestamp: Date.now()
-        });
+        
+        // Check if this page already exists
+        const existingPageIndex = pages.findIndex(p => p.url === data.pageData.url);
+        
+        if (existingPageIndex >= 0) {
+          // Update relevance score if it changed significantly
+          const existingPage = pages[existingPageIndex];
+          if (Math.abs(existingPage.relevanceScore - evaluation.score) > 0.1) {
+            existingPage.relevanceScore = evaluation.score;
+            existingPage.lastEvaluationTime = Date.now();
+          }
+        } else {
+          // Add new page entry
+          pages.push({
+            url: data.pageData.url,
+            title: data.pageData.title,
+            domain: data.pageData.domain,
+            relevanceScore: evaluation.score,
+            timestamp: Date.now(),
+            lastEvaluationTime: Date.now(),
+            dwellTime: 0,
+            visitCount: 1,
+            lastVisitTime: Date.now()
+          });
+        }
         
         await storage.updateSession({
           pagesVisited: pages,
@@ -415,13 +434,19 @@ async function handleMessage(message, sender) {
         return null;
       }
       
+      // Record final page dwell time before ending
+      await recordPageDwellTime();
+      
+      // Get updated session after recording dwell time
+      const updatedSession = await storage.getCurrentSession();
+      
       // Generate review only if goal exists
       const sessionGoalData = await goalManager.getCurrentGoal();
       let review = null;
       
       if (sessionGoalData) {
         try {
-          review = await reviewGenerator.generateReview(endingSession, sessionGoalData);
+          review = await reviewGenerator.generateReview(updatedSession, sessionGoalData);
         } catch (error) {
           Logger.warn('Failed to generate review, ending session without review', error);
         }
@@ -518,11 +543,50 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 });
 
 // ============================================================================
-// TAB CHANGE DETECTION
+// TAB CHANGE DETECTION & TIME TRACKING
 // ============================================================================
 
 let lastActiveTabId = null;
 let tabActivationTime = Date.now();
+let currentPageUrl = null;
+let currentPageStartTime = Date.now();
+
+/**
+ * Record dwell time for current page before switching to a new one
+ */
+async function recordPageDwellTime() {
+  if (!currentPageUrl) {
+    return;
+  }
+  
+  const session = await storage.getCurrentSession();
+  if (!session) {
+    return;
+  }
+  
+  const dwellTime = Date.now() - currentPageStartTime;
+  
+  // Only record if dwelt for at least 1 second
+  if (dwellTime < 1000) {
+    return;
+  }
+  
+  const pages = session.pagesVisited || [];
+  
+  // Find existing entry for this URL
+  const existingPage = pages.find(p => p.url === currentPageUrl);
+  
+  if (existingPage) {
+    // Update existing entry with accumulated time
+    existingPage.dwellTime = (existingPage.dwellTime || 0) + dwellTime;
+    existingPage.lastVisitTime = Date.now();
+    existingPage.visitCount = (existingPage.visitCount || 1) + 1;
+  }
+  // If not found, it means this page hasn't been evaluated yet, skip for now
+  
+  await storage.updateSession({ pagesVisited: pages });
+  Logger.debug(`Recorded ${dwellTime}ms dwell time for ${currentPageUrl}`);
+}
 
 /**
  * Inject content script if not already present
@@ -589,11 +653,8 @@ async function triggerPageEvaluation(tabId, url) {
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   Logger.debug('Tab activated', activeInfo.tabId);
   
-  // Record dwell time on previous tab
-  if (lastActiveTabId) {
-    const dwellTime = Date.now() - tabActivationTime;
-    Logger.debug(`Dwelled on tab ${lastActiveTabId} for ${dwellTime}ms`);
-  }
+  // Record dwell time on previous page
+  await recordPageDwellTime();
   
   lastActiveTabId = activeInfo.tabId;
   tabActivationTime = Date.now();
@@ -602,6 +663,10 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
     if (tab.url) {
+      // Update current page tracking
+      currentPageUrl = tab.url;
+      currentPageStartTime = Date.now();
+      
       await triggerPageEvaluation(activeInfo.tabId, tab.url);
     }
   } catch (error) {
@@ -614,6 +679,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Only trigger when the page has finished loading
   if (changeInfo.status === 'complete' && tab.url) {
     Logger.debug('Tab updated (navigation)', { tabId, url: tab.url });
+    
+    // Record dwell time for previous page if URL changed
+    if (tab.active && currentPageUrl && currentPageUrl !== tab.url) {
+      await recordPageDwellTime();
+      currentPageUrl = tab.url;
+      currentPageStartTime = Date.now();
+    }
+    
     await triggerPageEvaluation(tabId, tab.url);
   }
 });
