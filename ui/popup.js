@@ -277,6 +277,9 @@ function setupEventListeners() {
   document.getElementById('thresholdSlider').addEventListener('input', (e) => {
     document.getElementById('thresholdValue').textContent = e.target.value;
   });
+  document.getElementById('cooldownSlider').addEventListener('input', (e) => {
+    document.getElementById('cooldownValue').textContent = e.target.value;
+  });
   
   // History
   document.getElementById('closeHistoryBtn').addEventListener('click', hideHistory);
@@ -482,6 +485,11 @@ async function showSettings() {
   document.getElementById('interventionCheckbox').checked = currentSettings.interventionEnabled;
   document.getElementById('thresholdSlider').value = currentSettings.relevanceThreshold;
   document.getElementById('thresholdValue').textContent = currentSettings.relevanceThreshold;
+  
+  // Convert notification cooldown from milliseconds to minutes for display
+  const cooldownMinutes = Math.round(currentSettings.notificationCooldown / 60000);
+  document.getElementById('cooldownSlider').value = cooldownMinutes;
+  document.getElementById('cooldownValue').textContent = cooldownMinutes;
 }
 
 function hideSettings() {
@@ -490,12 +498,17 @@ function hideSettings() {
 
 async function saveSettings() {
   try {
+    // Convert notification cooldown from minutes to milliseconds
+    const cooldownMinutes = parseInt(document.getElementById('cooldownSlider').value);
+    const cooldownMs = cooldownMinutes * 60000;
+    
     const newSettings = {
       enabled: document.getElementById('enabledCheckbox').checked,
       autoGoalSetting: document.getElementById('autoGoalCheckbox').checked,
       detectionEnabled: document.getElementById('detectionCheckbox').checked,
       interventionEnabled: document.getElementById('interventionCheckbox').checked,
-      relevanceThreshold: parseFloat(document.getElementById('thresholdSlider').value)
+      relevanceThreshold: parseFloat(document.getElementById('thresholdSlider').value),
+      notificationCooldown: cooldownMs
     };
     
     await sendMessage('UPDATE_SETTINGS', { settings: newSettings });
