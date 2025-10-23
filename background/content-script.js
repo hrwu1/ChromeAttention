@@ -11,12 +11,40 @@ let globalAnalyzer = null;
 function extractMainText(doc = document) {
   const clone = doc.cloneNode(true);
   
-  const unwantedSelectors = ['script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe', 'noscript'];
+  // Remove unwanted elements including transient UI elements
+  const unwantedSelectors = [
+    'script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe', 'noscript',
+    // Additional transient elements that change during scrolling
+    '[role="banner"]',          // Header/banner roles
+    '[role="navigation"]',      // Navigation roles
+    '[role="complementary"]',   // Sidebar/complementary content
+    '.sticky',                  // Common sticky element classes
+    '.fixed',
+    '.header',
+    '.navbar',
+    '.sidebar',
+    '.advertisement',
+    '.ad',
+    '[class*="sticky"]',        // Any class containing "sticky"
+    '[style*="position: fixed"]', // Fixed position elements
+    '[style*="position: sticky"]' // Sticky position elements
+  ];
+  
   unwantedSelectors.forEach(selector => {
-    clone.querySelectorAll(selector).forEach(el => el.remove());
+    try {
+      clone.querySelectorAll(selector).forEach(el => el.remove());
+    } catch (e) {
+      // Ignore selector errors for complex selectors
+    }
   });
   
-  let text = clone.body?.innerText || '';
+  // Try to focus on main content area if available
+  let mainContent = clone.querySelector('main, article, [role="main"], .main-content, #content, #main');
+  if (!mainContent) {
+    mainContent = clone.body;
+  }
+  
+  let text = mainContent?.innerText || '';
   text = text.replace(/\s+/g, ' ').trim();
   
   const MAX_LENGTH = 10000;
@@ -55,6 +83,8 @@ function shouldExcludeUrl(url) {
 class PageAnalyzer {
   constructor() {
     this.pageData = null;
+    this.contentHash = null;  // Store hash of content
+    this.lastEvaluationTime = 0;  // Track when we last evaluated
     this.activityScore = 0;
     this.dwellStartTime = Date.now();
     this.evaluationTimer = null;
@@ -62,18 +92,62 @@ class PageAnalyzer {
   }
   
   /**
-   * Extract full page data
+   * Create a simple hash of text content
    */
-  extractPageData() {
+  hashContent(text) {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(36);
+  }
+  
+  /**
+   * Calculate similarity between two strings (Jaccard similarity)
+   */
+  calculateSimilarity(text1, text2) {
+    const words1 = new Set(text1.toLowerCase().split(/\s+/));
+    const words2 = new Set(text2.toLowerCase().split(/\s+/));
+    
+    const intersection = new Set([...words1].filter(x => words2.has(x)));
+    const union = new Set([...words1, ...words2]);
+    
+    return union.size > 0 ? intersection.size / union.size : 1.0;
+  }
+  
+  /**
+   * Extract full page data with content change detection
+   */
+  extractPageData(forceExtract = false) {
     const metadata = extractPageMetadata();
     const text = extractMainText();
+    
+    // Create hash of the content
+    const newHash = this.hashContent(text);
+    
+    // If we have previous data, check if content changed significantly
+    if (this.pageData && !forceExtract) {
+      const similarity = this.calculateSimilarity(this.pageData.text, text);
+      
+      // If content is more than 80% similar, consider it unchanged
+      if (similarity > 0.8) {
+        console.log('[Focus Assistant] Content unchanged (similarity:', (similarity * 100).toFixed(1) + '%), skipping re-extraction');
+        return { changed: false, pageData: this.pageData };
+      }
+      
+      console.log('[Focus Assistant] Content changed significantly (similarity:', (similarity * 100).toFixed(1) + '%)');
+    }
     
     this.pageData = {
       ...metadata,
       text: text
     };
     
-    return this.pageData;
+    this.contentHash = newHash;
+    
+    return { changed: true, pageData: this.pageData };
   }
   
   /**
@@ -134,19 +208,29 @@ class PageAnalyzer {
   }
   
   /**
-   * Perform page evaluation
+   * Perform page evaluation with smart change detection
    */
   async performEvaluation(skipDwellCheck = false) {
-    if (this.hasEvaluated) {
-      return; // Already evaluated this page
+    // Debouncing: Don't evaluate too frequently (minimum 5 seconds between evaluations)
+    const timeSinceLastEval = Date.now() - this.lastEvaluationTime;
+    if (timeSinceLastEval < 5000 && !skipDwellCheck) {
+      console.log('[Focus Assistant] Debouncing: Too soon since last evaluation (', timeSinceLastEval, 'ms)');
+      return;
     }
     
-    if (!this.pageData) {
-      this.extractPageData();
+    // Extract page data and check if content changed
+    const extractResult = this.extractPageData();
+    
+    // If content hasn't changed significantly, skip re-evaluation
+    if (!extractResult.changed && this.hasEvaluated) {
+      console.log('[Focus Assistant] Content unchanged, skipping re-evaluation');
+      return;
     }
+    
+    const pageData = extractResult.pageData;
     
     // Check if should exclude
-    if (shouldExcludeUrl(this.pageData.url)) {
+    if (shouldExcludeUrl(pageData.url)) {
       console.log('[Focus Assistant] Excluded URL, skipping evaluation');
       return;
     }
@@ -158,14 +242,14 @@ class PageAnalyzer {
       return;
     }
     
-    console.log('[Focus Assistant] Evaluating page...', { url: this.pageData.url, dwellTime });
+    console.log('[Focus Assistant] Evaluating page...', { url: pageData.url, dwellTime, contentChanged: extractResult.changed });
     
     try {
       // Send to background for evaluation
       const response = await chrome.runtime.sendMessage({
         type: 'EVALUATE_PAGE',
         data: {
-          pageData: this.pageData,
+          pageData: pageData,
           dwellTime: dwellTime,
           activityScore: this.activityScore
         }
@@ -174,6 +258,7 @@ class PageAnalyzer {
       if (response.success) {
         console.log('[Focus Assistant] Evaluation result:', response.data);
         this.hasEvaluated = true;
+        this.lastEvaluationTime = Date.now();
         
         // Show subtle indicator
         this.showEvaluationIndicator(response.data);
@@ -265,8 +350,8 @@ function initializeAnalyzer(analyzer) {
   // Store as global analyzer
   globalAnalyzer = analyzer;
   
-  // Extract initial page data
-  analyzer.extractPageData();
+  // Extract initial page data (force on first load)
+  analyzer.extractPageData(true);
   
   // Start monitoring activity
   analyzer.startActivityMonitoring();
@@ -292,14 +377,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Use the global analyzer if available, or create a new one
     if (!globalAnalyzer) {
       globalAnalyzer = new PageAnalyzer();
-      globalAnalyzer.extractPageData();
+      globalAnalyzer.extractPageData(true); // Force extract on first load
       globalAnalyzer.startActivityMonitoring();
     }
     
     // Reset evaluation flag and perform evaluation
     globalAnalyzer.hasEvaluated = false;
     globalAnalyzer.dwellStartTime = Date.now();
-    globalAnalyzer.extractPageData(); // Update page data for new page
+    
+    // Force extract page data for manually triggered evaluations (new page load)
+    globalAnalyzer.extractPageData(true);
     
     // Skip dwell check for manually triggered evaluations
     globalAnalyzer.performEvaluation(true)
@@ -311,7 +398,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'REQUEST_FEEDBACK') {
     // User clicked "It's Relevant" in notification
     const analyzer = globalAnalyzer || new PageAnalyzer();
-    const pageData = analyzer.extractPageData();
+    const extractResult = analyzer.extractPageData(true);
+    const pageData = extractResult.pageData || extractResult;
     
     chrome.runtime.sendMessage({
       type: 'SUBMIT_FEEDBACK',
@@ -331,7 +419,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'EXTRACT_PAGE_DATA') {
     // Extract and return page data
     const analyzer = globalAnalyzer || new PageAnalyzer();
-    const pageData = analyzer.extractPageData();
+    const extractResult = analyzer.extractPageData(true);
+    const pageData = extractResult.pageData || extractResult;
     sendResponse({ success: true, data: pageData });
     return false;
   }

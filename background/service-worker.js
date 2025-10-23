@@ -723,6 +723,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 let lastActiveTabId = null;
 let tabActivationTime = Date.now();
 let currentPageUrl = null;
+let currentPageBaseUrl = null;  // Track base URL to detect real navigation
 let currentPageStartTime = Date.now();
 
 /**
@@ -842,8 +843,11 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
     if (tab.url) {
+      const newBaseUrl = getBaseUrl(tab.url);
+      
       // Update current page tracking
       currentPageUrl = tab.url;
+      currentPageBaseUrl = newBaseUrl;
       currentPageStartTime = Date.now();
       
       await triggerPageEvaluation(activeInfo.tabId, tab.url);
@@ -857,16 +861,38 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Only trigger when the page has finished loading
   if (changeInfo.status === 'complete' && tab.url) {
-    Logger.debug('Tab updated (navigation)', { tabId, url: tab.url });
+    const newBaseUrl = getBaseUrl(tab.url);
     
-    // Record dwell time for previous page if URL changed
-    if (tab.active && currentPageUrl && currentPageUrl !== tab.url) {
-      await recordPageDwellTime();
-      currentPageUrl = tab.url;
-      currentPageStartTime = Date.now();
+    // Check if base URL actually changed (not just query parameters)
+    const baseUrlChanged = currentPageBaseUrl !== newBaseUrl;
+    
+    if (baseUrlChanged) {
+      Logger.debug('Tab updated (navigation)', { tabId, url: tab.url });
+      
+      // Record dwell time for previous page if base URL changed
+      if (tab.active && currentPageUrl) {
+        await recordPageDwellTime();
+      }
+      
+      // Update tracking
+      if (tab.active) {
+        currentPageUrl = tab.url;
+        currentPageBaseUrl = newBaseUrl;
+        currentPageStartTime = Date.now();
+      }
+      
+      await triggerPageEvaluation(tabId, tab.url);
+    } else {
+      Logger.debug('Tab updated (query params changed, skipping re-evaluation)', { 
+        tabId, 
+        baseUrl: newBaseUrl 
+      });
+      
+      // Just update the full URL for tracking, but don't re-evaluate
+      if (tab.active) {
+        currentPageUrl = tab.url;
+      }
     }
-    
-    await triggerPageEvaluation(tabId, tab.url);
   }
 });
 
