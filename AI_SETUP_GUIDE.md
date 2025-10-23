@@ -89,7 +89,7 @@ In Chrome 138+, the model downloads **automatically** when you first use an AI f
    - **Namespace API**: Returns object: `{ available: "readily" }` ✅
    - `"no"` or `{ available: "no" }` - ❌ Hardware requirements not met
 
-**Important Discovery:** The AI APIs are available as **direct global classes** (`LanguageModel`, `Summarizer`, etc.) rather than under a namespace object (`ai.languageModel`). Both access methods may work depending on your Chrome version.
+**Important Discovery:** The AI APIs are available as **direct global classes** (`LanguageModel`, `Summarizer`, `Writer`, `Rewriter`) rather than under a namespace object (`ai.languageModel`). Both access methods may work depending on your Chrome version.
 
 4. **If the command works:**
    - ✅ AI is enabled and working!

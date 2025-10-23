@@ -218,10 +218,10 @@ const summary = await summarizer.summarize(pageText);
 
 ```javascript
 // Check availability
-const status = await AIWriter.availability();
+const status = await Writer.availability();
 
 // Create writer
-const writer = await AIWriter.create({
+const writer = await Writer.create({
   tone: "neutral",
   length: "short"
 });

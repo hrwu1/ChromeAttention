@@ -38,8 +38,8 @@ class AIManager {
       Logger.debug('Checking AI API classes...', {
         'typeof LanguageModel': typeof LanguageModel,
         'typeof Summarizer': typeof Summarizer,
-        'typeof AIWriter': typeof AIWriter,
-        'typeof AIRewriter': typeof AIRewriter,
+        'typeof Writer': typeof Writer,
+        'typeof Rewriter': typeof Rewriter,
         'typeof self.ai': typeof self.ai,
         'typeof globalThis.ai': typeof globalThis.ai
       });
@@ -155,12 +155,12 @@ class AIManager {
       
       // Check Writer
       const hasWriter = this.useDirectAPI ? 
-        (typeof AIWriter !== 'undefined') : 
+        (typeof Writer !== 'undefined') : 
         (this.aiNamespace && this.aiNamespace.writer);
         
       if (hasWriter) {
         try {
-          const api = this.useDirectAPI ? AIWriter : this.aiNamespace.writer;
+          const api = this.useDirectAPI ? Writer : this.aiNamespace.writer;
           
           // Use availability() for direct API, capabilities() for namespace API
           const availability = this.useDirectAPI ? 
@@ -185,12 +185,12 @@ class AIManager {
       
       // Check Rewriter  
       const hasRewriter = this.useDirectAPI ? 
-        (typeof AIRewriter !== 'undefined') : 
+        (typeof Rewriter !== 'undefined') : 
         (this.aiNamespace && this.aiNamespace.rewriter);
         
       if (hasRewriter) {
         try {
-          const api = this.useDirectAPI ? AIRewriter : this.aiNamespace.rewriter;
+          const api = this.useDirectAPI ? Rewriter : this.aiNamespace.rewriter;
           
           // Use availability() for direct API, capabilities() for namespace API
           const availability = this.useDirectAPI ? 
@@ -341,7 +341,7 @@ class AIManager {
         sharedContext: options.context || ''
       };
       
-      const api = this.useDirectAPI ? AIWriter : this.aiNamespace.writer;
+      const api = this.useDirectAPI ? Writer : this.aiNamespace.writer;
       const writer = await api.create(writerOptions);
       const result = await writer.write(prompt);
       
@@ -370,7 +370,7 @@ class AIManager {
         sharedContext: options.context || ''
       };
       
-      const api = this.useDirectAPI ? AIRewriter : this.aiNamespace.rewriter;
+      const api = this.useDirectAPI ? Rewriter : this.aiNamespace.rewriter;
       const rewriter = await api.create(rewriterOptions);
       const result = await rewriter.rewrite(text);
       
