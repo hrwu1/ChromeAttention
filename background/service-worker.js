@@ -34,43 +34,89 @@ class AIManager {
     
     try {
       // Check if ai namespace exists
-      if (!self.ai) {
-        Logger.warn('Chrome AI namespace not available');
+      if (typeof self.ai === 'undefined') {
+        Logger.warn('Chrome AI namespace not available - Gemini Nano may not be enabled');
+        Logger.info('To enable: Visit chrome://flags and enable "Prompt API for Gemini Nano" and "Optimization Guide On Device Model"');
         return false;
       }
       
-      // Check Language Model (Prompt API)
+      // Check Language Model (Prompt API for Gemini Nano)
       if (self.ai.languageModel) {
-        const status = await self.ai.languageModel.capabilities();
-        this.capabilities.languageModel = status.available === 'readily' || status.available === 'after-download';
-        Logger.info('Language Model available:', this.capabilities.languageModel);
+        try {
+          const canCreate = await self.ai.languageModel.capabilities();
+          this.capabilities.languageModel = canCreate.available === 'readily';
+          
+          if (canCreate.available === 'after-download') {
+            Logger.info('Language Model available after download - triggering download...');
+            this.capabilities.languageModel = true; // Mark as available, it will download on first use
+          }
+          
+          Logger.info('Language Model status:', canCreate.available);
+        } catch (e) {
+          Logger.warn('Language Model check failed:', e.message);
+          this.capabilities.languageModel = false;
+        }
+      } else {
+        Logger.warn('Language Model API not found');
+        this.capabilities.languageModel = false;
       }
       
       // Check Summarizer
       if (self.ai.summarizer) {
-        const status = await self.ai.summarizer.capabilities();
-        this.capabilities.summarizer = status.available === 'readily' || status.available === 'after-download';
-        Logger.info('Summarizer available:', this.capabilities.summarizer);
+        try {
+          const canCreate = await self.ai.summarizer.capabilities();
+          this.capabilities.summarizer = canCreate.available === 'readily' || canCreate.available === 'after-download';
+          Logger.info('Summarizer status:', canCreate.available);
+        } catch (e) {
+          Logger.warn('Summarizer check failed:', e.message);
+          this.capabilities.summarizer = false;
+        }
+      } else {
+        Logger.warn('Summarizer API not found');
+        this.capabilities.summarizer = false;
       }
       
       // Check Writer
       if (self.ai.writer) {
-        const status = await self.ai.writer.capabilities();
-        this.capabilities.writer = status.available === 'readily' || status.available === 'after-download';
-        Logger.info('Writer available:', this.capabilities.writer);
+        try {
+          const canCreate = await self.ai.writer.capabilities();
+          this.capabilities.writer = canCreate.available === 'readily' || canCreate.available === 'after-download';
+          Logger.info('Writer status:', canCreate.available);
+        } catch (e) {
+          Logger.warn('Writer check failed:', e.message);
+          this.capabilities.writer = false;
+        }
+      } else {
+        Logger.warn('Writer API not found');
+        this.capabilities.writer = false;
       }
       
       // Check Rewriter
       if (self.ai.rewriter) {
-        const status = await self.ai.rewriter.capabilities();
-        this.capabilities.rewriter = status.available === 'readily' || status.available === 'after-download';
-        Logger.info('Rewriter available:', this.capabilities.rewriter);
+        try {
+          const canCreate = await self.ai.rewriter.capabilities();
+          this.capabilities.rewriter = canCreate.available === 'readily' || canCreate.available === 'after-download';
+          Logger.info('Rewriter status:', canCreate.available);
+        } catch (e) {
+          Logger.warn('Rewriter check failed:', e.message);
+          this.capabilities.rewriter = false;
+        }
+      } else {
+        Logger.warn('Rewriter API not found');
+        this.capabilities.rewriter = false;
       }
       
-      const allAvailable = Object.values(this.capabilities).every(v => v);
-      Logger.info('All AI APIs available:', allAvailable);
+      const anyAvailable = Object.values(this.capabilities).some(v => v);
+      Logger.info('AI APIs summary:', this.capabilities);
       
-      return allAvailable;
+      if (!anyAvailable) {
+        Logger.warn('No AI APIs available. Please ensure Chrome flags are enabled:');
+        Logger.warn('1. chrome://flags/#prompt-api-for-gemini-nano -> Enabled');
+        Logger.warn('2. chrome://flags/#optimization-guide-on-device-model -> Enabled BypassPerfRequirement');
+        Logger.warn('3. After enabling, check chrome://components/ and update "Optimization Guide On Device Model"');
+      }
+      
+      return anyAvailable;
       
     } catch (error) {
       Logger.error('Error checking AI availability', error);
@@ -80,9 +126,11 @@ class AIManager {
   
   /**
    * Check if AI is available
+   * Returns true if at least the language model is available
+   * (Other APIs are optional enhancements)
    */
   isAvailable() {
-    return this.capabilities.languageModel && this.capabilities.summarizer;
+    return this.capabilities.languageModel || this.capabilities.summarizer;
   }
   
   /**
@@ -91,7 +139,7 @@ class AIManager {
   async getLanguageModelSession(systemPrompt = null) {
     try {
       if (!this.capabilities.languageModel) {
-        throw new Error('Language Model not available');
+        throw new Error('Language Model not available. Please enable Chrome AI in chrome://flags');
       }
       
       // Create new session if needed
@@ -105,14 +153,21 @@ class AIManager {
           options.systemPrompt = systemPrompt;
         }
         
-        this.sessions.languageModel = await self.ai.languageModel.create(options);
-        Logger.debug('Created language model session');
+        try {
+          this.sessions.languageModel = await self.ai.languageModel.create(options);
+          Logger.debug('Created language model session with options:', options);
+        } catch (createError) {
+          Logger.error('Failed to create session, trying without options', createError);
+          // Try with minimal options
+          this.sessions.languageModel = await self.ai.languageModel.create();
+        }
       }
       
       return this.sessions.languageModel;
       
     } catch (error) {
       Logger.error('Failed to create language model session', error);
+      Logger.info('Make sure Gemini Nano is downloaded: Check chrome://components/ -> Optimization Guide On Device Model');
       throw error;
     }
   }

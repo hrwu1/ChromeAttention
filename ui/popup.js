@@ -58,13 +58,19 @@ function updateAIStatus(status) {
   // Update status indicator
   const statusIndicator = document.getElementById('statusIndicator');
   const statusText = document.getElementById('statusText');
+  const setupPrompt = document.getElementById('aiSetupPrompt');
   
   if (available) {
     statusIndicator.className = 'status-indicator active';
     statusText.textContent = 'AI Ready';
+    setupPrompt.style.display = 'none';
   } else {
     statusIndicator.className = 'status-indicator inactive';
     statusText.textContent = 'AI Not Available';
+    // Show setup instructions if no AI is available
+    if (!capabilities.languageModel && !capabilities.summarizer && !capabilities.writer) {
+      setupPrompt.style.display = 'block';
+    }
   }
   
   // Update individual AI components

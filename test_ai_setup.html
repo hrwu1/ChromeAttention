@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chrome AI Setup Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #333;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .test-result {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 10px 10px 0;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #007bff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-left: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 Chrome AI (Gemini Nano) Setup Verification</h1>
+  
+  <div class="test-section">
+    <h2>Instructions</h2>
+    <p>This page will test if Chrome's built-in AI (Gemini Nano) is properly configured on your system.</p>
+    <ol>
+      <li>Make sure you've enabled the required Chrome flags (see <a href="AI_SETUP_GUIDE.md">setup guide</a>)</li>
+      <li>Restart Chrome after enabling flags</li>
+      <li>Download the AI model from <code>chrome://components/</code></li>
+      <li>Click the test buttons below to verify each API</li>
+    </ol>
+  </div>
+
+  <div class="test-section">
+    <h2>Quick Setup Checklist</h2>
+    <div id="setupChecklist">
+      <p>✓ <strong>Chrome Version:</strong> <span id="chromeVersion">Checking...</span></p>
+      <p>✓ <strong>Required Flags:</strong></p>
+      <ul>
+        <li><code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enabled</li>
+        <li><code>chrome://flags/#optimization-guide-on-device-model</code> → Enabled BypassPerfRequirement</li>
+      </ul>
+      <p>✓ <strong>Model Download:</strong> Check <code>chrome://components/</code> → "Optimization Guide On Device Model"</p>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>API Tests</h2>
+    
+    <div style="margin: 20px 0;">
+      <button id="testAllBtn" onclick="testAll()">🚀 Test All APIs</button>
+      <button id="testLanguageModelBtn" onclick="testLanguageModel()">Test Language Model</button>
+      <button id="testSummarizerBtn" onclick="testSummarizer()">Test Summarizer</button>
+      <button id="testWriterBtn" onclick="testWriter()">Test Writer</button>
+    </div>
+
+    <div id="testResults"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Debug Information</h2>
+    <button onclick="showDebugInfo()">Show Debug Info</button>
+    <pre id="debugInfo" style="display: none;"></pre>
+  </div>
+
+  <script>
+    // Display Chrome version
+    const match = navigator.userAgent.match(/Chrome\/(\d+)/);
+    const chromeVersion = match ? match[1] : 'Unknown';
+    document.getElementById('chromeVersion').textContent = chromeVersion + (chromeVersion >= 127 ? ' ✓' : ' ✗ (Need 127+)');
+
+    function addResult(message, type = 'info') {
+      const resultsDiv = document.getElementById('testResults');
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${type}`;
+      resultDiv.innerHTML = message;
+      resultsDiv.appendChild(resultDiv);
+      return resultDiv;
+    }
+
+    function clearResults() {
+      document.getElementById('testResults').innerHTML = '';
+    }
+
+    async function testLanguageModel() {
+      clearResults();
+      const resultDiv = addResult('🔄 Testing Language Model API... <span class="spinner"></span>', 'info');
+      
+      try {
+        // Check if AI namespace exists
+        if (typeof ai === 'undefined') {
+          resultDiv.className = 'test-result error';
+          resultDiv.innerHTML = '❌ <strong>AI namespace not found</strong><br>The <code>ai</code> global is not available. Please ensure Chrome flags are enabled and Chrome is restarted.';
+          return false;
+        }
+
+        // Check if languageModel API exists
+        if (!ai.languageModel) {
+          resultDiv.className = 'test-result error';
+          resultDiv.innerHTML = '❌ <strong>Language Model API not found</strong><br>The API exists but languageModel is undefined. This might indicate the flag is not enabled.';
+          return false;
+        }
+
+        // Check capabilities
+        const capabilities = await ai.languageModel.capabilities();
+        
+        if (capabilities.available === 'readily') {
+          resultDiv.className = 'test-result success';
+          resultDiv.innerHTML = '✅ <strong>Language Model: Available!</strong><br>Status: ' + capabilities.available;
+          
+          // Try to create a session
+          try {
+            const session = await ai.languageModel.create();
+            const response = await session.prompt('Say "Hello!"');
+            addResult('✅ <strong>Test prompt successful!</strong><br>Response: ' + response.substring(0, 100), 'success');
+            session.destroy();
+            return true;
+          } catch (e) {
+            addResult('⚠️ <strong>Session created but prompt failed</strong><br>Error: ' + e.message, 'warning');
+            return true;
+          }
+        } else if (capabilities.available === 'after-download') {
+          resultDiv.className = 'test-result warning';
+          resultDiv.innerHTML = '⚠️ <strong>Language Model: Available after download</strong><br>Please wait for the model to download, or trigger download at <code>chrome://components/</code>';
+          return false;
+        } else {
+          resultDiv.className = 'test-result error';
+          resultDiv.innerHTML = '❌ <strong>Language Model: Not available</strong><br>Status: ' + capabilities.available;
+          return false;
+        }
+      } catch (error) {
+        resultDiv.className = 'test-result error';
+        resultDiv.innerHTML = '❌ <strong>Language Model test failed</strong><br>Error: ' + error.message;
+        return false;
+      }
+    }
+
+    async function testSummarizer() {
+      const resultDiv = addResult('🔄 Testing Summarizer API... <span class="spinner"></span>', 'info');
+      
+      try {
+        if (typeof ai === 'undefined' || !ai.summarizer) {
+          resultDiv.className = 'test-result error';
+          resultDiv.innerHTML = '❌ <strong>Summarizer API not found</strong>';
+          return false;
+        }
+
+        const capabilities = await ai.summarizer.capabilities();
+        
+        if (capabilities.available === 'readily') {
+          resultDiv.className = 'test-result success';
+          resultDiv.innerHTML = '✅ <strong>Summarizer: Available!</strong>';
+          
+          // Try to use it
+          try {
+            const summarizer = await ai.summarizer.create();
+            const summary = await summarizer.summarize('This is a test text about artificial intelligence and machine learning. These technologies are transforming how we interact with computers.');
+            addResult('✅ <strong>Summarizer test successful!</strong><br>Summary: ' + summary, 'success');
+            summarizer.destroy();
+            return true;
+          } catch (e) {
+            addResult('⚠️ <strong>Summarizer available but test failed</strong><br>Error: ' + e.message, 'warning');
+            return false;
+          }
+        } else if (capabilities.available === 'after-download') {
+          resultDiv.className = 'test-result warning';
+          resultDiv.innerHTML = '⚠️ <strong>Summarizer: Available after download</strong>';
+          return false;
+        } else {
+          resultDiv.className = 'test-result error';
+          resultDiv.innerHTML = '❌ <strong>Summarizer: Not available</strong><br>Status: ' + capabilities.available;
+          return false;
+        }
+      } catch (error) {
+        resultDiv.className = 'test-result error';
+        resultDiv.innerHTML = '❌ <strong>Summarizer test failed</strong><br>Error: ' + error.message;
+        return false;
+      }
+    }
+
+    async function testWriter() {
+      const resultDiv = addResult('🔄 Testing Writer API... <span class="spinner"></span>', 'info');
+      
+      try {
+        if (typeof ai === 'undefined' || !ai.writer) {
+          resultDiv.className = 'test-result warning';
+          resultDiv.innerHTML = '⚠️ <strong>Writer API not found</strong><br>This API may not be available in your Chrome version yet.';
+          return false;
+        }
+
+        const capabilities = await ai.writer.capabilities();
+        
+        if (capabilities.available === 'readily') {
+          resultDiv.className = 'test-result success';
+          resultDiv.innerHTML = '✅ <strong>Writer: Available!</strong>';
+          return true;
+        } else if (capabilities.available === 'after-download') {
+          resultDiv.className = 'test-result warning';
+          resultDiv.innerHTML = '⚠️ <strong>Writer: Available after download</strong>';
+          return false;
+        } else {
+          resultDiv.className = 'test-result warning';
+          resultDiv.innerHTML = '⚠️ <strong>Writer: Not available</strong><br>Status: ' + capabilities.available + ' (This is optional)';
+          return false;
+        }
+      } catch (error) {
+        resultDiv.className = 'test-result warning';
+        resultDiv.innerHTML = '⚠️ <strong>Writer API not available</strong><br>This is optional for the extension.';
+        return false;
+      }
+    }
+
+    async function testAll() {
+      clearResults();
+      addResult('<strong>Running all tests...</strong>', 'info');
+      
+      const results = {
+        languageModel: await testLanguageModel(),
+        summarizer: await testSummarizer(),
+        writer: await testWriter()
+      };
+      
+      // Summary
+      const allPassed = results.languageModel && results.summarizer;
+      if (allPassed) {
+        addResult('<strong>🎉 All essential APIs are working!</strong><br>Your Chrome AI setup is complete. The extension should work properly now.', 'success');
+      } else if (results.languageModel || results.summarizer) {
+        addResult('<strong>⚠️ Partial setup</strong><br>Some APIs are available. The extension will work with limited functionality.', 'warning');
+      } else {
+        addResult('<strong>❌ Setup incomplete</strong><br>Please follow the setup guide to enable Chrome AI features.', 'error');
+      }
+    }
+
+    async function showDebugInfo() {
+      const debugDiv = document.getElementById('debugInfo');
+      debugDiv.style.display = 'block';
+      
+      const info = {
+        userAgent: navigator.userAgent,
+        chromeVersion: chromeVersion,
+        aiNamespaceExists: typeof ai !== 'undefined',
+        availableAPIs: []
+      };
+      
+      if (typeof ai !== 'undefined') {
+        if (ai.languageModel) {
+          try {
+            const cap = await ai.languageModel.capabilities();
+            info.availableAPIs.push({ name: 'languageModel', capabilities: cap });
+          } catch (e) {
+            info.availableAPIs.push({ name: 'languageModel', error: e.message });
+          }
+        }
+        
+        if (ai.summarizer) {
+          try {
+            const cap = await ai.summarizer.capabilities();
+            info.availableAPIs.push({ name: 'summarizer', capabilities: cap });
+          } catch (e) {
+            info.availableAPIs.push({ name: 'summarizer', error: e.message });
+          }
+        }
+        
+        if (ai.writer) {
+          try {
+            const cap = await ai.writer.capabilities();
+            info.availableAPIs.push({ name: 'writer', capabilities: cap });
+          } catch (e) {
+            info.availableAPIs.push({ name: 'writer', error: e.message });
+          }
+        }
+      }
+      
+      debugDiv.textContent = JSON.stringify(info, null, 2);
+    }
+
+    // Auto-run tests on load if URL has ?autotest
+    if (window.location.search.includes('autotest')) {
+      window.addEventListener('load', () => {
+        setTimeout(testAll, 500);
+      });
+    }
+  </script>
+</body>
+</html>
+

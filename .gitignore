@@ -52,6 +52,8 @@ yarn.lock
 
 # Our own files
 _metadata/
+backup/
 DEVELOPMENT.md
 PROJECT_SUMMARY.md
 QUICKSTART.md
+BUGFIX_PAGE_TRACKING.md

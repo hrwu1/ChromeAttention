@@ -81,40 +81,34 @@ User provides feedback → Learning Engine
 
 ### Prerequisites
 
-You need Chrome Canary or Chrome Dev (version 128+) to access Chrome's built-in AI APIs.
+- **Chrome Version**: 127 or higher (Stable, Dev, or Canary)
+- **Disk Space**: ~1-2 GB for Gemini Nano model
+- **OS**: Windows, macOS, or Linux
 
-### Step 1: Enable Chrome AI Features
+### Quick Setup
 
-1. Open Chrome Canary/Dev
-2. Navigate to `chrome://flags` and enable the following flags:
-   - `chrome://flags/#optimization-guide-on-device-model` → **Enabled**
-   - `chrome://flags/#prompt-api-for-gemini-nano` → **Enabled**
-   - `chrome://flags/#summarization-api-for-gemini-nano` → **Enabled**
-   - `chrome://flags/#writer-api-for-gemini-nano` → **Enabled**
-   - `chrome://flags/#rewriter-api-for-gemini-nano` → **Enabled**
+**For detailed setup instructions, see [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md)**
 
-3. Restart Chrome
-4. Open DevTools Console on any page and run:
-   ```javascript
-   await ai.languageModel.create()
-   ```
-   - If it prompts you to download the model, wait for the download to complete
-   - This may take several minutes depending on your connection
+1. **Enable Chrome AI Features**
+   - Visit `chrome://flags/#prompt-api-for-gemini-nano` → Enable
+   - Visit `chrome://flags/#optimization-guide-on-device-model` → Enable BypassPerfRequirement
+   - Restart Chrome
 
-### Step 2: Install the Extension
+2. **Download AI Model**
+   - Visit `chrome://components/`
+   - Find "Optimization Guide On Device Model"
+   - Click "Check for update" and wait for download (~1-2 GB)
 
-1. Clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable **Developer mode** (toggle in top right)
-4. Click **Load unpacked**
-5. Select the `ChromeAttention` directory
+3. **Install Extension**
+   - Clone this repository
+   - Open `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked" and select the `ChromeAttention` directory
 
-### Step 3: Verify Installation
-
-1. Click the extension icon in the toolbar
-2. The popup should show "AI Status: Checking..."
-3. If all APIs are available, you'll see "AI Ready"
-4. If not, revisit Step 1 and ensure all flags are enabled
+4. **Verify Installation**
+   - Click the extension icon
+   - Check "AI Status" section - should show "✓ Ready" for all components
+   - If not available, see troubleshooting guide in [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md)
 
 ## Development Workflow
 
@@ -218,22 +212,28 @@ const summary = await writer.write("Summarize this focus session...");
 
 ### AI APIs Not Available
 
-- Ensure you're using Chrome Canary/Dev 128+
-- Verify all flags are enabled at `chrome://flags`
-- Check that Gemini Nano model has downloaded completely
-- Try running `await ai.languageModel.create()` in DevTools
+**See [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md) for detailed troubleshooting steps.**
+
+Quick checks:
+1. Ensure Chrome 127+ (`chrome://version/`)
+2. Verify flags enabled at `chrome://flags`
+3. Check model downloaded at `chrome://components/`
+4. Test in console: `await ai.languageModel.capabilities()` should return `{ available: "readily" }`
+5. Check debug logs at `chrome://on-device-internals/`
 
 ### Extension Not Loading
 
 - Check for errors in `chrome://extensions`
-- Ensure manifest.json is valid JSON
-- Verify file paths match the structure
+- Click "Inspect views: service worker" to see background console logs
+- Look for AI-related errors in service worker console
+- Reload the extension after enabling AI features
 
 ### Content Script Not Running
 
 - Check the page URL is not restricted (chrome://, edge://, etc.)
 - Look for errors in page DevTools console
 - Verify host_permissions in manifest.json
+- Try injecting manually from service worker console
 
 ## Contributing
 
