@@ -111,10 +111,16 @@ User provides feedback → Learning Engine
    - Enable "Developer mode"
    - Click "Load unpacked" and select the `ChromeAttention` directory
 
-4. **Verify Installation**
+4. **Verify AI is Working**
+   - Open DevTools (F12) and run: `await LanguageModel.availability()`
+   - Should return: `"available"` ✅
+   - If not, see [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md) for force download method
+
+5. **Install & Test Extension**
    - Click the extension icon
-   - Check "AI Status" section - should show "✓ Ready" for all components
-   - If not available, see troubleshooting guide in [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md)
+   - Check "AI Status" section - should show "✓ Ready" for Language Model and Summarizer
+   - Try "From Page" button to test AI goal extraction
+   - If not available, check extension service worker console for detailed logs
 
 ## Development Workflow
 
@@ -179,31 +185,61 @@ View logs in:
 
 ## Chrome AI API Usage
 
-### Example: Summarizer API
+**Note:** The AI APIs are available as **direct global classes** (`LanguageModel`, `Summarizer`, etc.) in Chrome extensions. The extension automatically detects and uses the correct access pattern.
+
+### Example: Language Model (Prompt API)
 
 ```javascript
-const summarizer = await ai.summarizer.create();
-const summary = await summarizer.summarize(pageText);
-```
+// Check availability
+const status = await LanguageModel.availability();  // Returns: "available", "no"
 
-### Example: Prompt API
-
-```javascript
-const session = await ai.languageModel.create({
+// Create session
+const session = await LanguageModel.create({
   systemPrompt: "You are a focus assistant...",
   temperature: 0.7
 });
+
+// Use it
 const response = await session.prompt("Is this page relevant to goal X?");
+```
+
+### Example: Summarizer API
+
+```javascript
+// Check availability
+const status = await Summarizer.availability();
+
+// Create summarizer
+const summarizer = await Summarizer.create();
+const summary = await summarizer.summarize(pageText);
 ```
 
 ### Example: Writer API
 
 ```javascript
-const writer = await ai.writer.create({
+// Check availability
+const status = await AIWriter.availability();
+
+// Create writer
+const writer = await AIWriter.create({
   tone: "neutral",
   length: "short"
 });
 const summary = await writer.write("Summarize this focus session...");
+```
+
+### Force Model Download
+
+If the model won't download automatically, use this in DevTools console:
+
+```javascript
+const session = await LanguageModel.create({
+  monitor(m) {
+    m.addEventListener('downloadprogress', (e) => {
+      console.log(`Downloaded ${e.loaded} of ${e.total} bytes`);
+    });
+  },
+});
 ```
 
 ## Privacy & Security
@@ -221,11 +257,15 @@ const summary = await writer.write("Summarize this focus session...");
 **See [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md) for detailed troubleshooting steps.**
 
 Quick checks:
-1. Ensure Chrome 128+ (138+ recommended for stable APIs) (`chrome://version/`)
-2. Verify flags enabled at `chrome://flags` (required for versions below 138)
-3. Check model downloaded at `chrome://components/`
-4. Test in console: `await ai.languageModel.capabilities()` should return `{ available: "readily" }`
-5. Check debug logs at `chrome://on-device-internals/`
+1. **Check Chrome Version**: 128+ (138+ recommended) at `chrome://version/`
+2. **Verify Flags**: Both flags enabled at `chrome://flags/` and Chrome restarted
+3. **Check Hardware**: 22GB free space, 4GB+ GPU VRAM
+4. **Test API**: Run `await LanguageModel.availability()` in console
+   - Should return: `"available"` (if ready)
+   - If returns: `"no"` → Check hardware requirements
+5. **Check Component** (optional): `chrome://components/` → "Optimization Guide On Device Model"
+6. **Force Download** (if needed): Use the LanguageModel.create() code with monitor callback (see AI API examples)
+7. **Debug Logs**: Check `chrome://on-device-internals/` for errors
 
 ### Extension Not Loading
 

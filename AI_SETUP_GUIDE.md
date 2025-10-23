@@ -180,12 +180,31 @@ If you don't see the component in `chrome://components/`, it's usually because:
    - Ensure you have enough disk space (~2 GB free)
    - Some features may require specific hardware capabilities
 
-### Model Download is Stuck
+### Model Download is Stuck or Component Not Appearing
 
-1. Restart Chrome completely (close all windows)
-2. Visit `chrome://components/` again
-3. Try "Check for update" again
-4. If still stuck, try clearing browser cache and restart
+**If hardware requirements are met, flags are enabled, but model still won't download:**
+
+1. **Force Download via Console** (Recommended):
+   - Open DevTools (F12) on any page
+   - Paste this code in the Console:
+   ```javascript
+   const session = await LanguageModel.create({
+     monitor(m) {
+       m.addEventListener('downloadprogress', (e) => {
+         console.log(`Downloaded ${e.loaded} of ${e.total} bytes (${(e.loaded/e.total*100).toFixed(1)}%)`);
+       });
+     },
+   });
+   ```
+   - This will trigger the model download and show progress
+   - Wait for download to complete (may take several minutes for ~1-2 GB)
+   - Once complete, the extension should detect AI availability
+
+2. **Alternative Methods**:
+   - Restart Chrome completely (close all windows)
+   - Visit `chrome://components/` and click "Check for update"
+   - Clear browser cache and restart
+   - Try using the extension's AI features (triggers auto-download)
 
 ### Features Not Working After Setup
 
@@ -201,9 +220,15 @@ If you don't see the component in `chrome://components/`, it's usually because:
    - Look for AI-related error messages in the console
 
 3. **Try a Simple Test**:
+   - Open DevTools console and run: `await LanguageModel.availability()`
+   - Should return: `"available"` (not `"no"`)
    - Open the extension popup
    - Try the "From Page" button to extract a goal from the current page
    - Check if AI features work
+
+4. **Force Download if Needed**:
+   - If requirements are met but model won't download automatically
+   - Use the force download method above (see "Model Download is Stuck")
 
 ## What Features Use AI?
 
