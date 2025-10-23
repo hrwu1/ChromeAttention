@@ -33,25 +33,83 @@ class AIManager {
     Logger.info('Checking Chrome AI API availability...');
     
     try {
-      // Check if ai namespace exists
-      if (typeof self.ai === 'undefined') {
-        Logger.warn('Chrome AI namespace not available - Gemini Nano may not be enabled');
-        Logger.info('To enable: Visit chrome://flags and enable "Prompt API for Gemini Nano" and "Optimization Guide On Device Model"');
-        return false;
+      // The AI APIs might be available as direct global classes, not under a namespace!
+      // User confirmed: LanguageModel.availability() works directly
+      Logger.debug('Checking AI API classes...', {
+        'typeof LanguageModel': typeof LanguageModel,
+        'typeof Summarizer': typeof Summarizer,
+        'typeof AIWriter': typeof AIWriter,
+        'typeof AIRewriter': typeof AIRewriter,
+        'typeof self.ai': typeof self.ai,
+        'typeof globalThis.ai': typeof globalThis.ai
+      });
+      
+      // Check if APIs are available as direct globals (no namespace needed)
+      const hasDirectAPIs = typeof LanguageModel !== 'undefined';
+      
+      if (hasDirectAPIs) {
+        Logger.info('✅ AI APIs found as direct global classes (LanguageModel, etc.)');
+        this.useDirectAPI = true;
+      } else {
+        // Fallback: Try to find namespace-based access
+        let aiNamespace = null;
+        if (typeof self.ai !== 'undefined') {
+          aiNamespace = self.ai;
+          Logger.info('Found AI namespace at: self.ai');
+        } else if (typeof globalThis.ai !== 'undefined') {
+          aiNamespace = globalThis.ai;
+          Logger.info('Found AI namespace at: globalThis.ai');
+        }
+        
+        if (aiNamespace) {
+          this.aiNamespace = aiNamespace;
+          this.useDirectAPI = false;
+        } else {
+          Logger.warn('Chrome AI not available - APIs not found');
+          Logger.warn('Checked: LanguageModel (direct), self.ai, globalThis.ai (all undefined)');
+          Logger.info('To enable: Visit chrome://flags and enable "Prompt API for Gemini Nano"');
+          Logger.info('Then restart Chrome completely (close all windows)');
+          return false;
+        }
       }
       
       // Check Language Model (Prompt API for Gemini Nano)
-      if (self.ai.languageModel) {
+      const hasLanguageModel = this.useDirectAPI ? 
+        (typeof LanguageModel !== 'undefined') : 
+        (this.aiNamespace && this.aiNamespace.languageModel);
+        
+      if (hasLanguageModel) {
         try {
-          const canCreate = await self.ai.languageModel.capabilities();
-          this.capabilities.languageModel = canCreate.available === 'readily';
+          // Access API directly or via namespace
+          const api = this.useDirectAPI ? LanguageModel : this.aiNamespace.languageModel;
           
-          if (canCreate.available === 'after-download') {
-            Logger.info('Language Model available after download - triggering download...');
-            this.capabilities.languageModel = true; // Mark as available, it will download on first use
+          // Use availability() for direct API, capabilities() for namespace API
+          const availability = this.useDirectAPI ? 
+            await api.availability() : 
+            await api.capabilities();
+          
+          // Direct API returns string: 'readily', 'after-download', 'no'
+          // Namespace API returns object: { available: 'readily' }
+          let status = availability;
+          if (typeof availability === 'object' && availability.available) {
+            status = availability.available;
           }
           
-          Logger.info('Language Model status:', canCreate.available);
+          // Mark as available if it's ready or will download
+          // Direct API returns: 'available', 'no'
+          // Namespace API returns: 'readily', 'after-download', 'no'
+          this.capabilities.languageModel = (status === 'readily' || status === 'after-download' || status === 'available');
+          
+          if (status === 'available' || status === 'readily') {
+            Logger.info('Language Model: Ready to use');
+          } else if (status === 'after-download') {
+            Logger.info('Language Model: Model will download on first use');
+          } else {
+            Logger.warn('Language Model: Not available -', status);
+            Logger.warn('Check hardware requirements: 22GB free space, 4GB+ VRAM');
+          }
+          
+          Logger.info('Language Model status:', status);
         } catch (e) {
           Logger.warn('Language Model check failed:', e.message);
           this.capabilities.languageModel = false;
@@ -62,11 +120,30 @@ class AIManager {
       }
       
       // Check Summarizer
-      if (self.ai.summarizer) {
+      const hasSummarizer = this.useDirectAPI ? 
+        (typeof Summarizer !== 'undefined') : 
+        (this.aiNamespace && this.aiNamespace.summarizer);
+        
+      if (hasSummarizer) {
         try {
-          const canCreate = await self.ai.summarizer.capabilities();
-          this.capabilities.summarizer = canCreate.available === 'readily' || canCreate.available === 'after-download';
-          Logger.info('Summarizer status:', canCreate.available);
+          const api = this.useDirectAPI ? Summarizer : this.aiNamespace.summarizer;
+          
+          // Use availability() for direct API, capabilities() for namespace API
+          const availability = this.useDirectAPI ? 
+            await api.availability() : 
+            await api.capabilities();
+          
+          let status = availability;
+          if (typeof availability === 'object' && availability.available) {
+            status = availability.available;
+          }
+          
+          this.capabilities.summarizer = (status === 'readily' || status === 'after-download' || status === 'available');
+          
+          if (status === 'no') {
+            Logger.warn('Summarizer: Not available - check hardware requirements');
+          }
+          Logger.info('Summarizer status:', status);
         } catch (e) {
           Logger.warn('Summarizer check failed:', e.message);
           this.capabilities.summarizer = false;
@@ -77,11 +154,26 @@ class AIManager {
       }
       
       // Check Writer
-      if (self.ai.writer) {
+      const hasWriter = this.useDirectAPI ? 
+        (typeof AIWriter !== 'undefined') : 
+        (this.aiNamespace && this.aiNamespace.writer);
+        
+      if (hasWriter) {
         try {
-          const canCreate = await self.ai.writer.capabilities();
-          this.capabilities.writer = canCreate.available === 'readily' || canCreate.available === 'after-download';
-          Logger.info('Writer status:', canCreate.available);
+          const api = this.useDirectAPI ? AIWriter : this.aiNamespace.writer;
+          
+          // Use availability() for direct API, capabilities() for namespace API
+          const availability = this.useDirectAPI ? 
+            await api.availability() : 
+            await api.capabilities();
+          
+          let status = availability;
+          if (typeof availability === 'object' && availability.available) {
+            status = availability.available;
+          }
+          
+          this.capabilities.writer = (status === 'readily' || status === 'after-download' || status === 'available');
+          Logger.info('Writer status:', status);
         } catch (e) {
           Logger.warn('Writer check failed:', e.message);
           this.capabilities.writer = false;
@@ -91,12 +183,27 @@ class AIManager {
         this.capabilities.writer = false;
       }
       
-      // Check Rewriter
-      if (self.ai.rewriter) {
+      // Check Rewriter  
+      const hasRewriter = this.useDirectAPI ? 
+        (typeof AIRewriter !== 'undefined') : 
+        (this.aiNamespace && this.aiNamespace.rewriter);
+        
+      if (hasRewriter) {
         try {
-          const canCreate = await self.ai.rewriter.capabilities();
-          this.capabilities.rewriter = canCreate.available === 'readily' || canCreate.available === 'after-download';
-          Logger.info('Rewriter status:', canCreate.available);
+          const api = this.useDirectAPI ? AIRewriter : this.aiNamespace.rewriter;
+          
+          // Use availability() for direct API, capabilities() for namespace API
+          const availability = this.useDirectAPI ? 
+            await api.availability() : 
+            await api.capabilities();
+          
+          let status = availability;
+          if (typeof availability === 'object' && availability.available) {
+            status = availability.available;
+          }
+          
+          this.capabilities.rewriter = (status === 'readily' || status === 'after-download' || status === 'available');
+          Logger.info('Rewriter status:', status);
         } catch (e) {
           Logger.warn('Rewriter check failed:', e.message);
           this.capabilities.rewriter = false;
@@ -154,12 +261,14 @@ class AIManager {
         }
         
         try {
-          this.sessions.languageModel = await self.ai.languageModel.create(options);
+          const api = this.useDirectAPI ? LanguageModel : this.aiNamespace.languageModel;
+          this.sessions.languageModel = await api.create(options);
           Logger.debug('Created language model session with options:', options);
         } catch (createError) {
           Logger.error('Failed to create session, trying without options', createError);
           // Try with minimal options
-          this.sessions.languageModel = await self.ai.languageModel.create();
+          const api = this.useDirectAPI ? LanguageModel : this.aiNamespace.languageModel;
+          this.sessions.languageModel = await api.create();
         }
       }
       
@@ -203,7 +312,8 @@ class AIManager {
         sharedContext: options.context || ''
       };
       
-      const summarizer = await self.ai.summarizer.create(summarizerOptions);
+      const api = this.useDirectAPI ? Summarizer : this.aiNamespace.summarizer;
+      const summarizer = await api.create(summarizerOptions);
       const summary = await summarizer.summarize(text);
       
       Logger.debug('Summary generated', summary.substring(0, 100));
@@ -231,7 +341,8 @@ class AIManager {
         sharedContext: options.context || ''
       };
       
-      const writer = await self.ai.writer.create(writerOptions);
+      const api = this.useDirectAPI ? AIWriter : this.aiNamespace.writer;
+      const writer = await api.create(writerOptions);
       const result = await writer.write(prompt);
       
       Logger.debug('Writer result', result.substring(0, 100));
@@ -259,7 +370,8 @@ class AIManager {
         sharedContext: options.context || ''
       };
       
-      const rewriter = await self.ai.rewriter.create(rewriterOptions);
+      const api = this.useDirectAPI ? AIRewriter : this.aiNamespace.rewriter;
+      const rewriter = await api.create(rewriterOptions);
       const result = await rewriter.rewrite(text);
       
       Logger.debug('Rewriter result', result.substring(0, 100));

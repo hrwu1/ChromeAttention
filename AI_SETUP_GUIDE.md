@@ -4,11 +4,30 @@ This extension uses Chrome's built-in AI capabilities powered by Gemini Nano. To
 
 ## Requirements
 
-- **Chrome Version**: 127 or higher (Check your version at `chrome://version/`)
-- **Operating System**: Windows, macOS, or Linux
-- **Disk Space**: ~1-2 GB for the AI model download
+⚠️ **IMPORTANT: Hardware Requirements**
+
+The AI features will NOT work if your system doesn't meet these requirements:
+
+- **Chrome Version**: 128+ (138+ recommended for stable APIs)
+- **Operating System**: 
+  - Windows 10 or 11
+  - macOS 13+ (Ventura or newer)
+  - Linux
+  - ChromeOS (Platform 16389.0.0+) on Chromebook Plus
+- **Storage**: **22 GB free space** on the volume containing your Chrome profile
+  - This is MORE than the model size (~1-2 GB)
+  - Chrome needs this space for model management
+- **GPU**: **4 GB+ VRAM required**
+  - Integrated GPUs may not work
+  - Dedicated GPU recommended
+- **Network**: Unmetered internet connection for initial download
+
+**🔴 If these requirements aren't met, the "Optimization Guide On Device Model" component will NOT appear in `chrome://components/`**
 
 ## Setup Steps
+
+> **Good News for Chrome 138+ Users!** 🎉  
+> If you're using Chrome 138 or higher, the Prompt API for Extensions is **stable** and may work without enabling flags. However, we still recommend enabling flags for the best experience and to ensure all AI features work properly.
 
 ### Step 1: Enable Chrome Flags
 
@@ -23,17 +42,32 @@ This extension uses Chrome's built-in AI capabilities powered by Gemini Nano. To
 
 3. Click **Relaunch** button at the bottom to restart Chrome
 
-### Step 2: Download the AI Model
+### Step 2: Model Download
 
-1. After Chrome restarts, navigate to: `chrome://components/`
+**📌 Important Note About Chrome 138+**
 
-2. Find "**Optimization Guide On Device Model**" in the list
+In Chrome 138+, the model downloads **automatically** when you first use an AI feature. You don't need to manually check `chrome://components/`!
 
-3. Click the **Check for update** button next to it
+**If you want to verify manually** (optional):
 
-4. Wait for the model to download (this may take several minutes, ~1-2 GB)
-   - The version number should update when download is complete
-   - You can check the status in the component details
+1. Navigate to: `chrome://components/`
+
+2. Look for "**Optimization Guide On Device Model**" in the list
+
+3. **If you DON'T see it:**
+   - ⚠️ Your system may not meet hardware requirements (see Requirements section above)
+   - Check: 22GB free space? 4GB+ VRAM? Correct OS?
+   - The component only appears if requirements are met
+
+4. **If you DO see it:**
+   - Click "Check for update" to download manually
+   - Wait for download (~1-2 GB, may take several minutes)
+   - Version number should update when complete
+
+**Alternative Verification Method** (recommended):
+- The extension will trigger automatic download on first use
+- Check the extension's service worker console for download status
+- The model will download in the background when needed
 
 ### Step 3: Verify AI Availability
 
@@ -41,15 +75,37 @@ This extension uses Chrome's built-in AI capabilities powered by Gemini Nano. To
 
 2. Run the following command in the Console:
    ```javascript
-   await ai.languageModel.capabilities()
+   // Try direct API access (most common)
+   await LanguageModel.availability()
+   
+   // OR try namespace access (alternative)
+   await window.ai.languageModel.capabilities()
    ```
+   
+   **Note:** Direct API classes use `availability()`, namespace APIs use `capabilities()`
 
-3. If successful, you should see:
-   ```javascript
-   { available: "readily" }
-   ```
+3. Possible responses:
+   - **Direct API**: Returns string directly: `"available"` ✅
+   - **Namespace API**: Returns object: `{ available: "readily" }` ✅
+   - `"no"` or `{ available: "no" }` - ❌ Hardware requirements not met
 
-4. If you see `{ available: "after-download" }`, wait a bit longer for the download to complete
+**Important Discovery:** The AI APIs are available as **direct global classes** (`LanguageModel`, `Summarizer`, etc.) rather than under a namespace object (`ai.languageModel`). Both access methods may work depending on your Chrome version.
+
+4. **If the command works:**
+   - ✅ AI is enabled and working!
+   - The extension will now detect and use the AI APIs
+   - You can proceed to use the extension
+
+5. If you see `"after-download"`:
+   - This is **NORMAL** in Chrome 138+
+   - The model downloads automatically when you first use the extension
+   - Just start using the AI features, download happens in background
+
+6. If you see `"no"` or get an error:
+   - Check hardware requirements (22GB free space, 4GB+ VRAM)
+   - Verify your OS is supported
+   - Check if you have enough disk space in your Chrome profile directory
+   - Try: `await LanguageModel.availability()` (alternative method)
 
 ### Step 4: Enable in Extension
 
@@ -64,20 +120,56 @@ This extension uses Chrome's built-in AI capabilities powered by Gemini Nano. To
 
 ## Troubleshooting
 
+### "Optimization Guide On Device Model" Component Not Showing
+
+**This is the #1 issue users face!**
+
+If you don't see the component in `chrome://components/`, it's usually because:
+
+1. **❌ Insufficient Disk Space**
+   - You need **22 GB free** on the drive with your Chrome profile
+   - Not just 1-2 GB for the model - Chrome needs extra space for management
+   - Check: Right-click drive → Properties → See free space
+   - **Solution**: Free up disk space to at least 22 GB
+
+2. **❌ Insufficient GPU VRAM**
+   - You need **4 GB+ VRAM**
+   - Integrated GPUs (Intel HD Graphics) often don't have enough
+   - Check your GPU: Task Manager → Performance → GPU → Dedicated GPU Memory
+   - **Solution**: Use a system with a dedicated GPU
+
+3. **❌ Unsupported OS**
+   - Windows 9 and below: Not supported
+   - macOS 12 and below: Not supported
+   - **Solution**: Update your OS or use a supported system
+
+4. **✅ Chrome 138+ Automatic Download**
+   - In Chrome 138+, you don't need to see the component
+   - The model downloads automatically when you first use AI
+   - Just enable flags and start using the extension
+
 ### AI Shows as "Not Available"
 
-1. **Check Chrome Version**: Ensure you're running Chrome 127+
-   - Visit `chrome://version/`
+1. **Check Hardware Requirements FIRST** ⚠️
+   - 22 GB free disk space on Chrome profile volume
+   - 4 GB+ GPU VRAM
+   - This is the most common reason for failure
 
-2. **Verify Flags are Enabled**:
+2. **Check Chrome Version**: Ensure you're running Chrome 128+ (138+ recommended)
+   - Visit `chrome://version/`
+   - For stable APIs without flags, you need Chrome 138+
+
+3. **Verify Flags are Enabled**:
    - Visit `chrome://flags/` and confirm both flags are enabled
    - Make sure you restarted Chrome after enabling
 
-3. **Check Model Download**:
+3. **Check Model Download** (Optional in Chrome 138+):
    - Visit `chrome://components/`
    - Look for "Optimization Guide On Device Model"
+   - **If you don't see it**: Check hardware requirements above
    - If version shows "0.0.0.0", the model hasn't downloaded yet
    - Click "Check for update" and wait
+   - **In Chrome 138+**: Model auto-downloads, component may not appear
 
 4. **Check Debug Logs**:
    - Visit `chrome://on-device-internals/`

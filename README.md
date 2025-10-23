@@ -81,9 +81,15 @@ User provides feedback → Learning Engine
 
 ### Prerequisites
 
-- **Chrome Version**: 127 or higher (Stable, Dev, or Canary)
-- **Disk Space**: ~1-2 GB for Gemini Nano model
-- **OS**: Windows, macOS, or Linux
+⚠️ **Hardware Requirements** (IMPORTANT!)
+
+- **Chrome Version**: 128+ minimum, 138+ recommended for stable APIs
+- **Storage**: **22 GB free space** on Chrome profile volume (not just model size!)
+- **GPU**: **4 GB+ VRAM** (dedicated GPU recommended, integrated GPUs may not work)
+- **OS**: Windows 10/11, macOS 13+ (Ventura+), Linux, or ChromeOS 16389+
+- **Network**: Unmetered connection for initial download
+
+**Note**: If these requirements aren't met, AI features won't work and the model component won't appear in `chrome://components/`.
 
 ### Quick Setup
 
@@ -94,10 +100,10 @@ User provides feedback → Learning Engine
    - Visit `chrome://flags/#optimization-guide-on-device-model` → Enable BypassPerfRequirement
    - Restart Chrome
 
-2. **Download AI Model**
-   - Visit `chrome://components/`
-   - Find "Optimization Guide On Device Model"
-   - Click "Check for update" and wait for download (~1-2 GB)
+2. **Model Download**
+   - **Chrome 138+**: Model downloads automatically on first use (no manual step needed!)
+   - **Optional manual check**: Visit `chrome://components/` → "Optimization Guide On Device Model" → "Check for update"
+   - **Component not showing?** Check hardware requirements above (especially 22GB free space and 4GB+ VRAM)
 
 3. **Install Extension**
    - Clone this repository
@@ -215,8 +221,8 @@ const summary = await writer.write("Summarize this focus session...");
 **See [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md) for detailed troubleshooting steps.**
 
 Quick checks:
-1. Ensure Chrome 127+ (`chrome://version/`)
-2. Verify flags enabled at `chrome://flags`
+1. Ensure Chrome 128+ (138+ recommended for stable APIs) (`chrome://version/`)
+2. Verify flags enabled at `chrome://flags` (required for versions below 138)
 3. Check model downloaded at `chrome://components/`
 4. Test in console: `await ai.languageModel.capabilities()` should return `{ available: "readily" }`
 5. Check debug logs at `chrome://on-device-internals/`

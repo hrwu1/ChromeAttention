@@ -110,12 +110,22 @@
     <h2>Quick Setup Checklist</h2>
     <div id="setupChecklist">
       <p>✓ <strong>Chrome Version:</strong> <span id="chromeVersion">Checking...</span></p>
+      
+      <p>⚠️ <strong>Hardware Requirements</strong> (Chrome may not check these in DevTools):</p>
+      <ul style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px;">
+        <li><strong>22 GB</strong> free disk space on your Chrome profile volume</li>
+        <li><strong>4 GB+</strong> GPU VRAM (dedicated GPU recommended)</li>
+        <li><strong>OS:</strong> Windows 10/11, macOS 13+, Linux, or ChromeOS</li>
+        <li><strong>Network:</strong> Unmetered connection for download</li>
+      </ul>
+      <p style="font-size: 12px; color: #666;">💡 If component doesn't show in chrome://components/, it's usually due to insufficient disk space or GPU VRAM.</p>
+      
       <p>✓ <strong>Required Flags:</strong></p>
       <ul>
         <li><code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enabled</li>
         <li><code>chrome://flags/#optimization-guide-on-device-model</code> → Enabled BypassPerfRequirement</li>
       </ul>
-      <p>✓ <strong>Model Download:</strong> Check <code>chrome://components/</code> → "Optimization Guide On Device Model"</p>
+      <p>✓ <strong>Model Download:</strong> In Chrome 138+, model downloads automatically on first use. Check <code>chrome://components/</code> is optional.</p>
     </div>
   </div>
 
@@ -142,7 +152,15 @@
     // Display Chrome version
     const match = navigator.userAgent.match(/Chrome\/(\d+)/);
     const chromeVersion = match ? match[1] : 'Unknown';
-    document.getElementById('chromeVersion').textContent = chromeVersion + (chromeVersion >= 127 ? ' ✓' : ' ✗ (Need 127+)');
+    let versionStatus = '';
+    if (chromeVersion >= 138) {
+      versionStatus = ' ✓ (Stable APIs available)';
+    } else if (chromeVersion >= 128) {
+      versionStatus = ' ⚠️ (Flags required, 138+ recommended)';
+    } else {
+      versionStatus = ' ✗ (Need 128+, 138+ recommended)';
+    }
+    document.getElementById('chromeVersion').textContent = chromeVersion + versionStatus;
 
     function addResult(message, type = 'info') {
       const resultsDiv = document.getElementById('testResults');
@@ -162,30 +180,48 @@
       const resultDiv = addResult('🔄 Testing Language Model API... <span class="spinner"></span>', 'info');
       
       try {
-        // Check if AI namespace exists
-        if (typeof ai === 'undefined') {
-          resultDiv.className = 'test-result error';
-          resultDiv.innerHTML = '❌ <strong>AI namespace not found</strong><br>The <code>ai</code> global is not available. Please ensure Chrome flags are enabled and Chrome is restarted.';
-          return false;
-        }
-
-        // Check if languageModel API exists
-        if (!ai.languageModel) {
-          resultDiv.className = 'test-result error';
-          resultDiv.innerHTML = '❌ <strong>Language Model API not found</strong><br>The API exists but languageModel is undefined. This might indicate the flag is not enabled.';
-          return false;
-        }
-
-        // Check capabilities
-        const capabilities = await ai.languageModel.capabilities();
+        // Check if API is available directly or via namespace
+        let api = null;
+        let apiLocation = '';
         
-        if (capabilities.available === 'readily') {
+        if (typeof LanguageModel !== 'undefined') {
+          api = LanguageModel;
+          apiLocation = 'LanguageModel (direct global)';
+          addResult('✅ <strong>Found API as direct global class!</strong><br>Location: LanguageModel', 'success');
+        } else if (typeof ai !== 'undefined' && ai.languageModel) {
+          api = ai.languageModel;
+          apiLocation = 'ai.languageModel (namespace)';
+          addResult('ℹ️ Found API via namespace: ai.languageModel', 'info');
+        } else if (typeof window.ai !== 'undefined' && window.ai.languageModel) {
+          api = window.ai.languageModel;
+          apiLocation = 'window.ai.languageModel (namespace)';
+          addResult('ℹ️ Found API via namespace: window.ai.languageModel', 'info');
+        }
+        
+        if (!api) {
+          resultDiv.className = 'test-result error';
+          resultDiv.innerHTML = '❌ <strong>Language Model API not found</strong><br>Checked: LanguageModel (direct), ai.languageModel, window.ai.languageModel (all undefined)<br>Please ensure Chrome flags are enabled and Chrome is restarted.';
+          return false;
+        }
+
+        // Check availability - use availability() for direct API, capabilities() for namespace
+        let capabilities;
+        if (typeof LanguageModel !== 'undefined' && api === LanguageModel) {
+          // Direct API returns string directly
+          const status = await api.availability();
+          capabilities = { available: status };  // Wrap in object for consistent handling
+        } else {
+          // Namespace API returns object
+          capabilities = await api.capabilities();
+        }
+        
+        if (capabilities.available === 'readily' || capabilities.available === 'available') {
           resultDiv.className = 'test-result success';
-          resultDiv.innerHTML = '✅ <strong>Language Model: Available!</strong><br>Status: ' + capabilities.available;
+          resultDiv.innerHTML = '✅ <strong>Language Model: Available!</strong><br>Status: ' + capabilities.available + '<br>Location: ' + apiLocation;
           
           // Try to create a session
           try {
-            const session = await ai.languageModel.create();
+            const session = await api.create();
             const response = await session.prompt('Say "Hello!"');
             addResult('✅ <strong>Test prompt successful!</strong><br>Response: ' + response.substring(0, 100), 'success');
             session.destroy();
@@ -214,21 +250,39 @@
       const resultDiv = addResult('🔄 Testing Summarizer API... <span class="spinner"></span>', 'info');
       
       try {
-        if (typeof ai === 'undefined' || !ai.summarizer) {
+        // Check for direct API or namespace
+        let api = null;
+        if (typeof Summarizer !== 'undefined') {
+          api = Summarizer;
+          addResult('✅ Found Summarizer as direct global class', 'success');
+        } else if (typeof ai !== 'undefined' && ai.summarizer) {
+          api = ai.summarizer;
+        } else if (typeof window.ai !== 'undefined' && window.ai.summarizer) {
+          api = window.ai.summarizer;
+        }
+        
+        if (!api) {
           resultDiv.className = 'test-result error';
           resultDiv.innerHTML = '❌ <strong>Summarizer API not found</strong>';
           return false;
         }
 
-        const capabilities = await ai.summarizer.capabilities();
+        // Check availability
+        let capabilities;
+        if (typeof Summarizer !== 'undefined' && api === Summarizer) {
+          const status = await api.availability();
+          capabilities = { available: status };
+        } else {
+          capabilities = await api.capabilities();
+        }
         
-        if (capabilities.available === 'readily') {
+        if (capabilities.available === 'readily' || capabilities.available === 'available') {
           resultDiv.className = 'test-result success';
           resultDiv.innerHTML = '✅ <strong>Summarizer: Available!</strong>';
           
           // Try to use it
           try {
-            const summarizer = await ai.summarizer.create();
+            const summarizer = await api.create();
             const summary = await summarizer.summarize('This is a test text about artificial intelligence and machine learning. These technologies are transforming how we interact with computers.');
             addResult('✅ <strong>Summarizer test successful!</strong><br>Summary: ' + summary, 'success');
             summarizer.destroy();
