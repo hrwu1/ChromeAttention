@@ -158,14 +158,28 @@ class AIManager {
         (typeof Writer !== 'undefined') : 
         (this.aiNamespace && this.aiNamespace.writer);
         
+      Logger.debug('Checking Writer API:', {
+        useDirectAPI: this.useDirectAPI,
+        typeofWriter: typeof Writer,
+        hasNamespaceWriter: !!(this.aiNamespace && this.aiNamespace.writer),
+        hasWriter: hasWriter
+      });
+        
       if (hasWriter) {
         try {
           const api = this.useDirectAPI ? Writer : this.aiNamespace.writer;
+          
+          Logger.debug('Calling Writer API availability/capabilities...');
           
           // Use availability() for direct API, capabilities() for namespace API
           const availability = this.useDirectAPI ? 
             await api.availability() : 
             await api.capabilities();
+          
+          Logger.debug('Writer availability response:', { 
+            raw: availability,
+            type: typeof availability 
+          });
           
           let status = availability;
           if (typeof availability === 'object' && availability.available) {
@@ -173,13 +187,16 @@ class AIManager {
           }
           
           this.capabilities.writer = (status === 'readily' || status === 'after-download' || status === 'available');
-          Logger.info('Writer status:', status);
+          Logger.info('Writer status:', status, '(capability:', this.capabilities.writer + ')');
         } catch (e) {
           Logger.warn('Writer check failed:', e.message);
           this.capabilities.writer = false;
         }
       } else {
-        Logger.warn('Writer API not found');
+        Logger.warn('Writer API not found. Available APIs:', {
+          directAPIs: { Writer: typeof Writer },
+          namespaceAPIs: this.aiNamespace ? Object.keys(this.aiNamespace) : 'no namespace'
+        });
         this.capabilities.writer = false;
       }
       
@@ -430,6 +447,13 @@ chrome.runtime.onStartup.addListener(async () => {
   await aiManager.checkAvailability();
 });
 
+// Re-check AI availability periodically or when requested
+// This ensures the popup gets the latest status
+setInterval(async () => {
+  Logger.debug('Periodic AI availability check');
+  await aiManager.checkAvailability();
+}, 60000); // Check every minute
+
 // ============================================================================
 // MESSAGE ROUTING
 // ============================================================================
@@ -455,6 +479,8 @@ async function handleMessage(message, sender) {
   switch (type) {
     // AI Status
     case 'CHECK_AI_STATUS':
+      // Re-check AI availability to ensure we have the latest status
+      await aiManager.checkAvailability();
       return {
         available: aiManager.isAvailable(),
         capabilities: aiManager.capabilities
