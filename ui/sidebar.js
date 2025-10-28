@@ -43,6 +43,7 @@ async function loadData() {
         updateGoalsUI();
         updateSessionUI();
         updateMainStatus();
+        updateActiveSessionCard();
 
     } catch (error) {
         console.error('Failed to load data:', error);
@@ -256,6 +257,7 @@ function startSessionUpdateLoop() {
     sessionUpdateInterval = setInterval(() => {
         if (currentSession) {
             updateSessionUI();
+            updateActiveSessionCard();
         }
     }, 1000);
 }
@@ -521,6 +523,7 @@ async function handleStartSession() {
         currentSession = session;
         updateSessionUI();
         updateMainStatus();
+        updateActiveSessionCard();
         showSuccess('Focus session started!');
 
     } catch (error) {
@@ -542,6 +545,7 @@ async function handleEndSession() {
 
         updateSessionUI();
         updateMainStatus();
+        updateActiveSessionCard();
         hideLoading();
 
         // Show review
@@ -825,6 +829,7 @@ async function loadAnalytics() {
         const analytics = calculateAnalytics(history);
 
         // Update UI
+        updateActiveSessionCard();
         updateLastSessionCard(analytics.lastSession);
         updateTodayStats(analytics.today);
         renderWeekChart(analytics.week);
@@ -925,6 +930,36 @@ function calculateAnalytics(history) {
             activeTasks: allGoals.filter(g => g.isActive && !g.isDone).length
         }
     };
+}
+
+function updateActiveSessionCard() {
+    const card = document.getElementById('activeSessionCard');
+
+    if (!currentSession) {
+        card.style.display = 'none';
+        return;
+    }
+
+    card.style.display = 'block';
+
+    // Goal name
+    const goalText = currentSession.goals && currentSession.goals.length > 0
+        ? currentSession.goals[0].text
+        : 'Focus Session';
+    document.getElementById('activeSessionGoal').textContent = goalText;
+
+    // Calculate duration
+    const duration = Date.now() - currentSession.startTime;
+    document.getElementById('activeSessionTime').textContent = formatDwellTime(duration);
+
+    // Pages visited
+    document.getElementById('activeSessionPages').textContent = 
+        (currentSession.pagesVisited?.length || 0).toString();
+
+    // Distractions
+    const distractionCount = currentSession.distractions || 0;
+    document.getElementById('activeSessionDistractions').textContent = 
+        `${distractionCount} detected`;
 }
 
 function updateLastSessionCard(session) {

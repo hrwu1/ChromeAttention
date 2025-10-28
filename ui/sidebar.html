@@ -30,86 +30,25 @@
         <div class="tab-content-container">
             <!-- Goal Tab -->
             <div class="tab-content active" id="goalTab">
-                <!-- Goals List Section -->
-                <div class="section">
-                    <div class="section-header">
-                        <h2>My Goals</h2>
-                        <div class="header-buttons">
-                            <button class="btn btn-primary btn-small" id="setGoalFromPageBtn"
-                                title="Extract goal from current tab">📄 From Page</button>
-                            <button class="btn btn-secondary btn-small" id="addGoalBtn" title="Manually add a goal">+
-                                Manual</button>
-                        </div>
-                    </div>
-
-                    <div id="goalsContent">
-                        <div class="no-goals" id="noGoals">
-                            <p>No goals yet</p>
-                            <p class="hint">Click "From Page" to extract a goal from your current tab, or "Manual" to
-                                create one yourself.</p>
-                        </div>
-
-                        <div class="goals-list" id="goalsList" style="display: none;">
-                            <!-- Goals will be dynamically inserted here -->
-                        </div>
-                    </div>
-
-                    <div class="active-goals-summary" id="activeGoalsSummary" style="display: none;">
-                        <span id="activeGoalsCount">0</span> active goal(s)
-                    </div>
-                </div>
-
-                <!-- Session Section -->
-                <div class="section">
-                    <h2>Focus Session</h2>
-                    <div id="sessionContent">
-                        <div class="no-session" id="noSession">
-                            <p>No active session</p>
-                            <button class="btn btn-primary" id="startSessionBtn" disabled>Start Session</button>
-                            <p class="hint">Set a goal first to start a session</p>
-                        </div>
-                        <div class="session-display" id="sessionDisplay" style="display: none;">
-                            <div class="session-stats">
-                                <div class="stat">
-                                    <span class="stat-label">Duration</span>
-                                    <span class="stat-value" id="sessionDuration">0m</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-label">Pages</span>
-                                    <span class="stat-value" id="sessionPages">0</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-label">Distractions</span>
-                                    <span class="stat-value" id="sessionDistractions">0</span>
-                                </div>
-                            </div>
-                            <button class="btn btn-danger" id="endSessionBtn">End Session</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Tab -->
-            <div class="tab-content" id="analyticsTab">
-                <!-- Last Session Card -->
-                <div class="analytics-hero-card" id="lastSessionCard">
+                <!-- Active Session Card (shown when session is active) -->
+                <div class="analytics-hero-card" id="activeSessionCard" style="display: none;">
                     <div class="hero-header">
-                        <span class="hero-icon">🎯</span>
+                        <span class="hero-icon">🚀</span>
                         <div class="hero-title">
-                            <div class="hero-label">Last Session Complete</div>
-                            <div class="hero-goal" id="lastSessionGoal">Go to field trip</div>
+                            <div class="hero-label">Session In Progress</div>
+                            <div class="hero-goal" id="activeSessionGoal">Focus Session</div>
                         </div>
                     </div>
                     <div class="hero-stats">
                         <div class="hero-stat">
                             <div class="hero-stat-icon">⏱️</div>
-                            <div class="hero-stat-label">Total Time</div>
-                            <div class="hero-stat-value" id="lastSessionTime">5s</div>
+                            <div class="hero-stat-label">Duration</div>
+                            <div class="hero-stat-value" id="activeSessionTime">0m</div>
                         </div>
                         <div class="hero-stat">
-                            <div class="hero-stat-icon">🎯</div>
-                            <div class="hero-stat-label">Net Focus</div>
-                            <div class="hero-stat-value" id="lastSessionFocus">5s</div>
+                            <div class="hero-stat-icon">📄</div>
+                            <div class="hero-stat-label">Pages</div>
+                            <div class="hero-stat-value" id="activeSessionPages">0</div>
                         </div>
                     </div>
                     <div class="hero-footer">
@@ -117,271 +56,364 @@
                             <div class="hero-distraction-icon">⚠️</div>
                             <div class="hero-distraction-text">
                                 <span class="hero-distraction-label">Distractions</span>
-                                <span class="hero-distraction-detail" id="lastSessionDistractions">Total distraction
-                                    time: 0s</span>
+                                <span class="hero-distraction-detail" id="activeSessionDistractions">0 detected</span>
                             </div>
                         </div>
-                        <div class="hero-interruptions" id="lastSessionInterruptions">0 interruptions</div>
-                    </div>
-                    <div class="hero-efficiency">
-                        <span class="hero-efficiency-label">Focus Efficiency</span>
-                        <span class="hero-efficiency-value" id="lastSessionEfficiency">100%</span>
                     </div>
                 </div>
 
-                <!-- Today Section -->
-                <div class="section">
-                    <h3 class="analytics-section-title">Today</h3>
-                    <div class="today-stats">
-                        <div class="today-stat">
-                            <div class="today-stat-icon" style="background: #667eea;">⏱️</div>
-                            <div class="today-stat-label">Time</div>
-                            <div class="today-stat-value" id="todayTime">9s</div>
-                        </div>
-                        <div class="today-stat">
-                            <div class="today-stat-icon" style="background: #a855f7;">✓</div>
-                            <div class="today-stat-label">Tasks</div>
-                            <div class="today-stat-value" id="todayTasks">2</div>
-                        </div>
-                        <div class="today-stat">
-                            <div class="today-stat-icon" style="background: #f59e0b;">💡</div>
-                            <div class="today-stat-label">Nudges</div>
-                            <div class="today-stat-value" id="todayNudges">0</div>
-                        </div>
+                <!-- Goals List Section -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>My Goals</h2>
+                    <div class="header-buttons">
+                        <button class="btn btn-primary btn-small" id="setGoalFromPageBtn"
+                            title="Extract goal from current tab">📄 From Page</button>
+                        <button class="btn btn-secondary btn-small" id="addGoalBtn" title="Manually add a goal">+
+                            Manual</button>
                     </div>
                 </div>
 
-                <!-- Week Chart -->
-                <div class="section">
-                    <h3 class="analytics-section-title">
-                        <span>📈 Week</span>
-                    </h3>
-                    <canvas id="weekChart" width="400" height="200"></canvas>
+                <div id="goalsContent">
+                    <div class="no-goals" id="noGoals">
+                        <p>No goals yet</p>
+                        <p class="hint">Click "From Page" to extract a goal from your current tab, or "Manual" to
+                            create one yourself.</p>
+                    </div>
+
+                    <div class="goals-list" id="goalsList" style="display: none;">
+                        <!-- Goals will be dynamically inserted here -->
+                    </div>
                 </div>
 
-                <!-- Distractions Chart -->
-                <div class="section">
-                    <h3 class="analytics-section-title">Distractions</h3>
-                    <canvas id="distractionsChart" width="400" height="200"></canvas>
+                <div class="active-goals-summary" id="activeGoalsSummary" style="display: none;">
+                    <span id="activeGoalsCount">0</span> active goal(s)
                 </div>
+            </div>
 
-                <!-- Summary -->
-                <div class="section">
-                    <h3 class="analytics-section-title">Summary</h3>
-                    <div class="summary-list">
-                        <div class="summary-item">
-                            <span class="summary-label">Week Total</span>
-                            <span class="summary-value" id="summaryWeekTotal">38s</span>
+            <!-- Session Section -->
+            <div class="section">
+                <h2>Focus Session</h2>
+                <div id="sessionContent">
+                    <div class="no-session" id="noSession">
+                        <p>No active session</p>
+                        <button class="btn btn-primary" id="startSessionBtn" disabled>Start Session</button>
+                        <p class="hint">Set a goal first to start a session</p>
+                    </div>
+                    <div class="session-display" id="sessionDisplay" style="display: none;">
+                        <div class="session-stats">
+                            <div class="stat">
+                                <span class="stat-label">Duration</span>
+                                <span class="stat-value" id="sessionDuration">0m</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Pages</span>
+                                <span class="stat-value" id="sessionPages">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Distractions</span>
+                                <span class="stat-value" id="sessionDistractions">0</span>
+                            </div>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Sessions</span>
-                            <span class="summary-value" id="summarySessions">5</span>
+                        <button class="btn btn-danger" id="endSessionBtn">End Session</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="analyticsTab">
+            <!-- Last Session Card -->
+            <div class="analytics-hero-card" id="lastSessionCard">
+                <div class="hero-header">
+                    <span class="hero-icon">🎯</span>
+                    <div class="hero-title">
+                        <div class="hero-label">Last Session Complete</div>
+                        <div class="hero-goal" id="lastSessionGoal">Go to field trip</div>
+                    </div>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-icon">⏱️</div>
+                        <div class="hero-stat-label">Total Time</div>
+                        <div class="hero-stat-value" id="lastSessionTime">5s</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-icon">🎯</div>
+                        <div class="hero-stat-label">Net Focus</div>
+                        <div class="hero-stat-value" id="lastSessionFocus">5s</div>
+                    </div>
+                </div>
+                <div class="hero-footer">
+                    <div class="hero-distractions">
+                        <div class="hero-distraction-icon">⚠️</div>
+                        <div class="hero-distraction-text">
+                            <span class="hero-distraction-label">Distractions</span>
+                            <span class="hero-distraction-detail" id="lastSessionDistractions">Total distraction
+                                time: 0s</span>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Active Tasks</span>
-                            <span class="summary-value" id="summaryActiveTasks">2</span>
+                    </div>
+                    <div class="hero-interruptions" id="lastSessionInterruptions">0 interruptions</div>
+                </div>
+                <div class="hero-efficiency">
+                    <span class="hero-efficiency-label">Focus Efficiency</span>
+                    <span class="hero-efficiency-value" id="lastSessionEfficiency">100%</span>
+                </div>
+            </div>
+
+            <!-- Today Section -->
+            <div class="section">
+                <h3 class="analytics-section-title">Today</h3>
+                <div class="today-stats">
+                    <div class="today-stat">
+                        <div class="today-stat-icon" style="background: #667eea;">⏱️</div>
+                        <div class="today-stat-label">Time</div>
+                        <div class="today-stat-value" id="todayTime">9s</div>
+                    </div>
+                    <div class="today-stat">
+                        <div class="today-stat-icon" style="background: #a855f7;">✓</div>
+                        <div class="today-stat-label">Tasks</div>
+                        <div class="today-stat-value" id="todayTasks">2</div>
+                    </div>
+                    <div class="today-stat">
+                        <div class="today-stat-icon" style="background: #f59e0b;">💡</div>
+                        <div class="today-stat-label">Nudges</div>
+                        <div class="today-stat-value" id="todayNudges">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Week Chart -->
+            <div class="section">
+                <h3 class="analytics-section-title">
+                    <span>📈 Week</span>
+                </h3>
+                <canvas id="weekChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Distractions Chart -->
+            <div class="section">
+                <h3 class="analytics-section-title">Distractions</h3>
+                <canvas id="distractionsChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Summary -->
+            <div class="section">
+                <h3 class="analytics-section-title">Summary</h3>
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <span class="summary-label">Week Total</span>
+                        <span class="summary-value" id="summaryWeekTotal">38s</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Sessions</span>
+                        <span class="summary-value" id="summarySessions">5</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Active Tasks</span>
+                        <span class="summary-value" id="summaryActiveTasks">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settingsTab">
+            <!-- Focus Mode Section -->
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h2>Focus Mode</h2>
+                </div>
+                <div class="settings-section-content">
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            Intensity
+                            <span class="info-icon"
+                                data-tooltip="Controls how strictly Focus Assistant monitors your browsing. Light: Gentle nudges. Balanced: Moderate monitoring. Strict: Strong intervention for distractions."></span>
+                        </label>
+                        <div class="intensity-selector">
+                            <select id="intensitySelect" class="custom-select">
+                                <option value="balanced">⚖️ Balanced</option>
+                                <option value="light">🌤️ Light</option>
+                                <option value="strict">🔒 Strict</option>
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Settings Tab -->
-            <div class="tab-content" id="settingsTab">
-                <!-- Focus Mode Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>Focus Mode</h2>
-                    </div>
-                    <div class="settings-section-content">
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Intensity
-                                <span class="info-icon"
-                                    data-tooltip="Controls how strictly Focus Assistant monitors your browsing. Light: Gentle nudges. Balanced: Moderate monitoring. Strict: Strong intervention for distractions."></span>
-                            </label>
-                            <div class="intensity-selector">
-                                <select id="intensitySelect" class="custom-select">
-                                    <option value="balanced">⚖️ Balanced</option>
-                                    <option value="light">🌤️ Light</option>
-                                    <option value="strict">🔒 Strict</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+            <!-- AI Features Section -->
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h2>AI Features</h2>
                 </div>
-
-                <!-- AI Features Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>AI Features</h2>
-                    </div>
-                    <div class="settings-section-content">
-                        <div class="setting-group">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-title">
-                                        Task Suggestions
-                                        <span class="info-icon"
-                                            data-tooltip="Uses AI to automatically suggest goals based on your browsing patterns and page content."></span>
-                                    </div>
-                                    <div class="setting-description">Smart recommendations</div>
+                <div class="settings-section-content">
+                    <div class="setting-group">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-title">
+                                    Task Suggestions
+                                    <span class="info-icon"
+                                        data-tooltip="Uses AI to automatically suggest goals based on your browsing patterns and page content."></span>
                                 </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="autoGoalCheckbox">
-                                    <span class="toggle-slider"></span>
-                                </label>
+                                <div class="setting-description">Smart recommendations</div>
                             </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoGoalCheckbox">
+                                <span class="toggle-slider"></span>
+                            </label>
                         </div>
+                    </div>
 
-                        <!-- AI Status (Collapsible) -->
-                        <div class="ai-status-collapsible" id="aiStatusCollapsible">
-                            <div class="ai-status-header" id="aiStatusHeader">
-                                <span class="ai-status-label">AI Status</span>
-                                <span class="collapse-icon-small">▼</span>
-                            </div>
-                            <div class="ai-status-content" id="aiStatusContent">
-                                <div class="status-grid">
-                                    <div class="status-item">
-                                        <span class="label">Language Model:</span>
-                                        <span class="value" id="aiLanguageModel">...</span>
-                                    </div>
-                                    <div class="status-item">
-                                        <span class="label">Summarizer:</span>
-                                        <span class="value" id="aiSummarizer">...</span>
-                                    </div>
-                                    <div class="status-item">
-                                        <span class="label">Writer:</span>
-                                        <span class="value" id="aiWriter">...</span>
-                                    </div>
+                    <!-- AI Status (Collapsible) -->
+                    <div class="ai-status-collapsible" id="aiStatusCollapsible">
+                        <div class="ai-status-header" id="aiStatusHeader">
+                            <span class="ai-status-label">AI Status</span>
+                            <span class="collapse-icon-small">▼</span>
+                        </div>
+                        <div class="ai-status-content" id="aiStatusContent">
+                            <div class="status-grid">
+                                <div class="status-item">
+                                    <span class="label">Language Model:</span>
+                                    <span class="value" id="aiLanguageModel">...</span>
                                 </div>
-                                <div id="aiSetupPrompt"
-                                    style="display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px; font-size: 12px;">
-                                    <p style="margin: 0 0 8px 0;"><strong>⚠️ AI Not Available</strong></p>
-                                    <p style="margin: 0 0 8px 0;"><strong>Hardware Requirements:</strong></p>
-                                    <ul style="margin: 0 0 8px 0; padding-left: 20px; font-size: 11px;">
-                                        <li>22 GB free disk space</li>
-                                        <li>4 GB+ GPU VRAM</li>
-                                        <li>Windows 10+, macOS 13+, or Linux</li>
-                                    </ul>
-                                    <p style="margin: 0 0 8px 0;">Enable Gemini Nano in Chrome:</p>
-                                    <ol style="margin: 0 0 8px 0; padding-left: 20px;">
-                                        <li>Visit <code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enable</li>
-                                        <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> →
-                                            Enable
-                                            BypassPerfRequirement</li>
-                                        <li>Restart Chrome</li>
-                                        <li>Chrome 138+: Model auto-downloads on first use</li>
-                                    </ol>
-                                    <p style="margin: 0; font-size: 11px; color: #666;">See AI_SETUP_GUIDE.md for
-                                        detailed
-                                        instructions.</p>
+                                <div class="status-item">
+                                    <span class="label">Summarizer:</span>
+                                    <span class="value" id="aiSummarizer">...</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="label">Writer:</span>
+                                    <span class="value" id="aiWriter">...</span>
                                 </div>
                             </div>
+                            <div id="aiSetupPrompt"
+                                style="display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px; font-size: 12px;">
+                                <p style="margin: 0 0 8px 0;"><strong>⚠️ AI Not Available</strong></p>
+                                <p style="margin: 0 0 8px 0;"><strong>Hardware Requirements:</strong></p>
+                                <ul style="margin: 0 0 8px 0; padding-left: 20px; font-size: 11px;">
+                                    <li>22 GB free disk space</li>
+                                    <li>4 GB+ GPU VRAM</li>
+                                    <li>Windows 10+, macOS 13+, or Linux</li>
+                                </ul>
+                                <p style="margin: 0 0 8px 0;">Enable Gemini Nano in Chrome:</p>
+                                <ol style="margin: 0 0 8px 0; padding-left: 20px;">
+                                    <li>Visit <code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enable</li>
+                                    <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> →
+                                        Enable
+                                        BypassPerfRequirement</li>
+                                    <li>Restart Chrome</li>
+                                    <li>Chrome 138+: Model auto-downloads on first use</li>
+                                </ol>
+                                <p style="margin: 0; font-size: 11px; color: #666;">See AI_SETUP_GUIDE.md for
+                                    detailed
+                                    instructions.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Advanced Settings Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>Advanced Settings</h2>
+            <!-- Advanced Settings Section -->
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h2>Advanced Settings</h2>
+                </div>
+                <div class="settings-section-content">
+                    <div class="setting-group">
+                        <label class="setting-item-checkbox">
+                            <input type="checkbox" id="enabledCheckbox">
+                            <span>Enable Focus Assistant</span>
+                            <span class="info-icon"
+                                data-tooltip="Master switch to turn Focus Assistant on or off. When disabled, no monitoring or interventions will occur."></span>
+                        </label>
+                        <label class="setting-item-checkbox">
+                            <input type="checkbox" id="detectionCheckbox">
+                            <span>Distraction Detection</span>
+                            <span class="info-icon"
+                                data-tooltip="Monitors pages you visit and detects when you're browsing content unrelated to your active goals."></span>
+                        </label>
+                        <label class="setting-item-checkbox">
+                            <input type="checkbox" id="interventionCheckbox">
+                            <span>Show Interventions</span>
+                            <span class="info-icon"
+                                data-tooltip="Displays warning pages when you visit distracting sites, helping you stay on track with your goals."></span>
+                        </label>
                     </div>
-                    <div class="settings-section-content">
-                        <div class="setting-group">
-                            <label class="setting-item-checkbox">
-                                <input type="checkbox" id="enabledCheckbox">
-                                <span>Enable Focus Assistant</span>
-                                <span class="info-icon"
-                                    data-tooltip="Master switch to turn Focus Assistant on or off. When disabled, no monitoring or interventions will occur."></span>
-                            </label>
-                            <label class="setting-item-checkbox">
-                                <input type="checkbox" id="detectionCheckbox">
-                                <span>Distraction Detection</span>
-                                <span class="info-icon"
-                                    data-tooltip="Monitors pages you visit and detects when you're browsing content unrelated to your active goals."></span>
-                            </label>
-                            <label class="setting-item-checkbox">
-                                <input type="checkbox" id="interventionCheckbox">
-                                <span>Show Interventions</span>
-                                <span class="info-icon"
-                                    data-tooltip="Displays warning pages when you visit distracting sites, helping you stay on track with your goals."></span>
-                            </label>
-                        </div>
 
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Relevance Threshold: <span id="thresholdValue" class="setting-value">0.6</span>
-                                <span class="info-icon"
-                                    data-tooltip="How closely a page must match your goals to be considered relevant. Lower values (0.3) are more lenient, higher values (0.9) are stricter."></span>
-                            </label>
-                            <input type="range" id="thresholdSlider" class="custom-range" min="0.3" max="0.9" step="0.1"
-                                value="0.6">
-                        </div>
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            Relevance Threshold: <span id="thresholdValue" class="setting-value">0.6</span>
+                            <span class="info-icon"
+                                data-tooltip="How closely a page must match your goals to be considered relevant. Lower values (0.3) are more lenient, higher values (0.9) are stricter."></span>
+                        </label>
+                        <input type="range" id="thresholdSlider" class="custom-range" min="0.3" max="0.9" step="0.1"
+                            value="0.6">
+                    </div>
 
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Notification Cooldown: <span id="cooldownValue" class="setting-value">5</span> minutes
-                                <span class="info-icon"
-                                    data-tooltip="Minimum time between distraction notifications. Prevents notification fatigue by limiting how often you're alerted."></span>
-                            </label>
-                            <input type="range" id="cooldownSlider" class="custom-range" min="1" max="30" step="1"
-                                value="5">
-                        </div>
+                    <div class="setting-group">
+                        <label class="setting-label">
+                            Notification Cooldown: <span id="cooldownValue" class="setting-value">5</span> minutes
+                            <span class="info-icon"
+                                data-tooltip="Minimum time between distraction notifications. Prevents notification fatigue by limiting how often you're alerted."></span>
+                        </label>
+                        <input type="range" id="cooldownSlider" class="custom-range" min="1" max="30" step="1"
+                            value="5">
                     </div>
                 </div>
+            </div>
 
-                <!-- Actions -->
-                <div class="settings-actions-container">
-                    <button class="btn btn-primary btn-full" id="saveSettingsBtn">Save Settings</button>
-                    <button class="btn btn-secondary btn-full" id="viewHistoryBtn">View Session History</button>
-                </div>
+            <!-- Actions -->
+            <div class="settings-actions-container">
+                <button class="btn btn-primary btn-full" id="saveSettingsBtn">Save Settings</button>
+                <button class="btn btn-secondary btn-full" id="viewHistoryBtn">View Session History</button>
             </div>
         </div>
+    </div>
 
-        <!-- Session Review (shown after ending session) -->
-        <div class="section review-section" id="reviewSection" style="display: none;">
-            <h2>Session Review</h2>
-            <div id="reviewContent" class="review-content"></div>
-            <button class="btn btn-primary" id="closeReviewBtn">Close</button>
-        </div>
+    <!-- Session Review (shown after ending session) -->
+    <div class="section review-section" id="reviewSection" style="display: none;">
+        <h2>Session Review</h2>
+        <div id="reviewContent" class="review-content"></div>
+        <button class="btn btn-primary" id="closeReviewBtn">Close</button>
+    </div>
 
 
 
-        <!-- History Panel (Overlay) -->
-        <div class="overlay-panel" id="historyPanel" style="display: none;">
-            <div class="overlay-content">
-                <div class="overlay-header">
-                    <h2>Session History</h2>
-                    <button class="btn-close" id="closeHistoryBtn">✕</button>
-                </div>
-                <div id="historyContent" class="history-content">
-                    <p class="loading">Loading...</p>
-                </div>
+    <!-- History Panel (Overlay) -->
+    <div class="overlay-panel" id="historyPanel" style="display: none;">
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h2>Session History</h2>
+                <button class="btn-close" id="closeHistoryBtn">✕</button>
+            </div>
+            <div id="historyContent" class="history-content">
+                <p class="loading">Loading...</p>
             </div>
         </div>
+    </div>
 
-        <!-- Add/Edit Goal Dialog (Overlay) -->
-        <div class="overlay-panel" id="goalModal" style="display: none;">
-            <div class="overlay-content">
-                <div class="overlay-header">
-                    <h2 id="goalModalTitle">Add New Goal</h2>
-                    <button class="btn-close" id="closeGoalModalBtn">✕</button>
-                </div>
-                <div class="form-group">
-                    <label for="goalTextInput">Goal Description</label>
-                    <textarea id="goalTextInput" rows="3"
-                        placeholder="e.g., Research machine learning algorithms"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="goalKeywordsInput">Keywords (comma-separated)</label>
-                    <input type="text" id="goalKeywordsInput" placeholder="e.g., machine learning, neural networks, AI">
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-primary" id="saveGoalBtn">Save</button>
-                    <button class="btn btn-secondary" id="cancelGoalBtn">Cancel</button>
-                </div>
+    <!-- Add/Edit Goal Dialog (Overlay) -->
+    <div class="overlay-panel" id="goalModal" style="display: none;">
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h2 id="goalModalTitle">Add New Goal</h2>
+                <button class="btn-close" id="closeGoalModalBtn">✕</button>
+            </div>
+            <div class="form-group">
+                <label for="goalTextInput">Goal Description</label>
+                <textarea id="goalTextInput" rows="3"
+                    placeholder="e.g., Research machine learning algorithms"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="goalKeywordsInput">Keywords (comma-separated)</label>
+                <input type="text" id="goalKeywordsInput" placeholder="e.g., machine learning, neural networks, AI">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" id="saveGoalBtn">Save</button>
+                <button class="btn btn-secondary" id="cancelGoalBtn">Cancel</button>
             </div>
         </div>
+    </div>
     </div>
 
     <script type="module" src="sidebar.js"></script>
