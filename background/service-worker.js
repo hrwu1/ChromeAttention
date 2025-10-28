@@ -544,6 +544,12 @@ async function handleMessage(message, sender) {
     
     // Detection
     case 'EVALUATE_PAGE':
+      // Only evaluate if there's an active session
+      const session = await storage.getCurrentSession();
+      if (!session) {
+        return { score: 1.0, label: 'no-session', reason: 'No active session', matchedGoals: [] };
+      }
+      
       // Evaluate against all active goals
       const activeGoals = await goalManager.getActiveGoals();
       if (activeGoals.length === 0) {
@@ -560,7 +566,6 @@ async function handleMessage(message, sender) {
       }
       
       // Update session
-      const session = await storage.getCurrentSession();
       if (session) {
         const pages = session.pagesVisited || [];
         
