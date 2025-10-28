@@ -117,7 +117,8 @@
                             <div class="hero-distraction-icon">⚠️</div>
                             <div class="hero-distraction-text">
                                 <span class="hero-distraction-label">Distractions</span>
-                                <span class="hero-distraction-detail" id="lastSessionDistractions">Total distraction time: 0s</span>
+                                <span class="hero-distraction-detail" id="lastSessionDistractions">Total distraction
+                                    time: 0s</span>
                             </div>
                         </div>
                         <div class="hero-interruptions" id="lastSessionInterruptions">0 interruptions</div>
@@ -193,7 +194,11 @@
                     </div>
                     <div class="settings-section-content">
                         <div class="setting-group">
-                            <label class="setting-label">Intensity</label>
+                            <label class="setting-label">
+                                Intensity
+                                <span class="info-icon"
+                                    data-tooltip="Controls how strictly Focus Assistant monitors your browsing. Light: Gentle nudges. Balanced: Moderate monitoring. Strict: Strong intervention for distractions."></span>
+                            </label>
                             <div class="intensity-selector">
                                 <select id="intensitySelect" class="custom-select">
                                     <option value="balanced">⚖️ Balanced</option>
@@ -214,7 +219,11 @@
                         <div class="setting-group">
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <div class="setting-title">Task Suggestions</div>
+                                    <div class="setting-title">
+                                        Task Suggestions
+                                        <span class="info-icon"
+                                            data-tooltip="Uses AI to automatically suggest goals based on your browsing patterns and page content."></span>
+                                    </div>
                                     <div class="setting-description">Smart recommendations</div>
                                 </div>
                                 <label class="toggle-switch">
@@ -257,12 +266,14 @@
                                     <p style="margin: 0 0 8px 0;">Enable Gemini Nano in Chrome:</p>
                                     <ol style="margin: 0 0 8px 0; padding-left: 20px;">
                                         <li>Visit <code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enable</li>
-                                        <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> → Enable
+                                        <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> →
+                                            Enable
                                             BypassPerfRequirement</li>
                                         <li>Restart Chrome</li>
                                         <li>Chrome 138+: Model auto-downloads on first use</li>
                                     </ol>
-                                    <p style="margin: 0; font-size: 11px; color: #666;">See AI_SETUP_GUIDE.md for detailed
+                                    <p style="margin: 0; font-size: 11px; color: #666;">See AI_SETUP_GUIDE.md for
+                                        detailed
                                         instructions.</p>
                                 </div>
                             </div>
@@ -280,25 +291,41 @@
                             <label class="setting-item-checkbox">
                                 <input type="checkbox" id="enabledCheckbox">
                                 <span>Enable Focus Assistant</span>
+                                <span class="info-icon"
+                                    data-tooltip="Master switch to turn Focus Assistant on or off. When disabled, no monitoring or interventions will occur."></span>
                             </label>
                             <label class="setting-item-checkbox">
                                 <input type="checkbox" id="detectionCheckbox">
                                 <span>Distraction Detection</span>
+                                <span class="info-icon"
+                                    data-tooltip="Monitors pages you visit and detects when you're browsing content unrelated to your active goals."></span>
                             </label>
                             <label class="setting-item-checkbox">
                                 <input type="checkbox" id="interventionCheckbox">
                                 <span>Show Interventions</span>
+                                <span class="info-icon"
+                                    data-tooltip="Displays warning pages when you visit distracting sites, helping you stay on track with your goals."></span>
                             </label>
                         </div>
 
                         <div class="setting-group">
-                            <label class="setting-label">Relevance Threshold: <span id="thresholdValue" class="setting-value">0.6</span></label>
-                            <input type="range" id="thresholdSlider" class="custom-range" min="0.3" max="0.9" step="0.1" value="0.6">
+                            <label class="setting-label">
+                                Relevance Threshold: <span id="thresholdValue" class="setting-value">0.6</span>
+                                <span class="info-icon"
+                                    data-tooltip="How closely a page must match your goals to be considered relevant. Lower values (0.3) are more lenient, higher values (0.9) are stricter."></span>
+                            </label>
+                            <input type="range" id="thresholdSlider" class="custom-range" min="0.3" max="0.9" step="0.1"
+                                value="0.6">
                         </div>
 
                         <div class="setting-group">
-                            <label class="setting-label">Notification Cooldown: <span id="cooldownValue" class="setting-value">5</span> minutes</label>
-                            <input type="range" id="cooldownSlider" class="custom-range" min="1" max="30" step="1" value="5">
+                            <label class="setting-label">
+                                Notification Cooldown: <span id="cooldownValue" class="setting-value">5</span> minutes
+                                <span class="info-icon"
+                                    data-tooltip="Minimum time between distraction notifications. Prevents notification fatigue by limiting how often you're alerted."></span>
+                            </label>
+                            <input type="range" id="cooldownSlider" class="custom-range" min="1" max="30" step="1"
+                                value="5">
                         </div>
                     </div>
                 </div>
