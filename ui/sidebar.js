@@ -391,15 +391,24 @@ async function handleSetGoalFromPage() {
 
         // Get current tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        console.log('[Sidebar] Current tab:', tab.id, tab.url);
 
         // Extract page data
+        console.log('[Sidebar] Sending EXTRACT_PAGE_DATA to tab', tab.id);
         const response = await chrome.tabs.sendMessage(tab.id, {
             type: 'EXTRACT_PAGE_DATA'
         });
 
-        if (!response.success) {
+        console.log('[Sidebar] Received response:', response);
+
+        if (!response || !response.success) {
             throw new Error('Failed to extract page data');
         }
+
+        console.log('[Sidebar] Page data:', {
+            title: response.data.title,
+            textLength: response.data.text?.length || 0
+        });
 
         // Extract goal and add to list
         const newGoal = await sendMessage('EXTRACT_GOAL', {
@@ -416,7 +425,7 @@ async function handleSetGoalFromPage() {
     } catch (error) {
         console.error('Failed to set goal:', error);
         hideLoading();
-        showError('Failed to set goal. Make sure the page is loaded.');
+        showError('Failed to set goal. Make sure the page is loaded and not a chrome:// page.');
     }
 }
 

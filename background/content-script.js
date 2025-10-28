@@ -10,7 +10,7 @@ let globalAnalyzer = null;
 
 function extractMainText(doc = document) {
   const clone = doc.cloneNode(true);
-  
+
   // Remove unwanted elements including transient UI elements
   const unwantedSelectors = [
     'script', 'style', 'nav', 'footer', 'header', 'aside', 'iframe', 'noscript',
@@ -29,7 +29,7 @@ function extractMainText(doc = document) {
     '[style*="position: fixed"]', // Fixed position elements
     '[style*="position: sticky"]' // Sticky position elements
   ];
-  
+
   unwantedSelectors.forEach(selector => {
     try {
       clone.querySelectorAll(selector).forEach(el => el.remove());
@@ -37,21 +37,24 @@ function extractMainText(doc = document) {
       // Ignore selector errors for complex selectors
     }
   });
-  
+
   // Try to focus on main content area if available
   let mainContent = clone.querySelector('main, article, [role="main"], .main-content, #content, #main');
+
   if (!mainContent) {
     mainContent = clone.body;
   }
-  
+
   let text = mainContent?.innerText || '';
+
   text = text.replace(/\s+/g, ' ').trim();
-  
+
   const MAX_LENGTH = 10000;
   if (text.length > MAX_LENGTH) {
     text = text.substring(0, MAX_LENGTH) + '...';
   }
-  
+
+  console.log('[Focus Assistant] Final text length:', text.length);
   return text;
 }
 
@@ -71,9 +74,9 @@ function shouldExcludeUrl(url) {
     'chrome.google.com/webstore',
     'microsoftedge.microsoft.com'
   ];
-  
+
   return excludedProtocols.some(protocol => url.startsWith(protocol)) ||
-         excludedPatterns.some(pattern => url.includes(pattern));
+    excludedPatterns.some(pattern => url.includes(pattern));
 }
 
 // ============================================================================
@@ -90,7 +93,7 @@ class PageAnalyzer {
     this.evaluationTimer = null;
     this.hasEvaluated = false;
   }
-  
+
   /**
    * Create a simple hash of text content
    */
@@ -103,53 +106,53 @@ class PageAnalyzer {
     }
     return hash.toString(36);
   }
-  
+
   /**
    * Calculate similarity between two strings (Jaccard similarity)
    */
   calculateSimilarity(text1, text2) {
     const words1 = new Set(text1.toLowerCase().split(/\s+/));
     const words2 = new Set(text2.toLowerCase().split(/\s+/));
-    
+
     const intersection = new Set([...words1].filter(x => words2.has(x)));
     const union = new Set([...words1, ...words2]);
-    
+
     return union.size > 0 ? intersection.size / union.size : 1.0;
   }
-  
+
   /**
    * Extract full page data with content change detection
    */
   extractPageData(forceExtract = false) {
     const metadata = extractPageMetadata();
     const text = extractMainText();
-    
+
     // Create hash of the content
     const newHash = this.hashContent(text);
-    
+
     // If we have previous data, check if content changed significantly
     if (this.pageData && !forceExtract) {
       const similarity = this.calculateSimilarity(this.pageData.text, text);
-      
+
       // If content is more than 80% similar, consider it unchanged
       if (similarity > 0.8) {
         console.log('[Focus Assistant] Content unchanged (similarity:', (similarity * 100).toFixed(1) + '%), skipping re-extraction');
         return { changed: false, pageData: this.pageData };
       }
-      
+
       console.log('[Focus Assistant] Content changed significantly (similarity:', (similarity * 100).toFixed(1) + '%)');
     }
-    
+
     this.pageData = {
       ...metadata,
       text: text
     };
-    
+
     this.contentHash = newHash;
-    
+
     return { changed: true, pageData: this.pageData };
   }
-  
+
   /**
    * Monitor user activity on page
    */
@@ -158,7 +161,7 @@ class PageAnalyzer {
     document.addEventListener('keypress', () => {
       this.activityScore++;
     });
-    
+
     // Track mouse movement (throttled)
     let lastMouseMove = 0;
     document.addEventListener('mousemove', () => {
@@ -168,7 +171,7 @@ class PageAnalyzer {
         lastMouseMove = now;
       }
     });
-    
+
     // Track scrolling
     let lastScroll = 0;
     document.addEventListener('scroll', () => {
@@ -179,21 +182,21 @@ class PageAnalyzer {
       }
     });
   }
-  
+
   /**
    * Calculate dwell time on current page
    */
   getDwellTime() {
     return Date.now() - this.dwellStartTime;
   }
-  
+
   /**
    * Check if user is actively engaged
    */
   isActivelyEngaged() {
     return this.activityScore > 5; // Arbitrary threshold
   }
-  
+
   /**
    * Start evaluation timer
    */
@@ -201,12 +204,12 @@ class PageAnalyzer {
     if (this.evaluationTimer) {
       clearTimeout(this.evaluationTimer);
     }
-    
+
     this.evaluationTimer = setTimeout(() => {
       this.performEvaluation();
     }, delayMs);
   }
-  
+
   /**
    * Perform page evaluation with smart change detection
    */
@@ -217,33 +220,33 @@ class PageAnalyzer {
       console.log('[Focus Assistant] Debouncing: Too soon since last evaluation (', timeSinceLastEval, 'ms)');
       return;
     }
-    
+
     // Extract page data and check if content changed
     const extractResult = this.extractPageData();
-    
+
     // If content hasn't changed significantly, skip re-evaluation
     if (!extractResult.changed && this.hasEvaluated) {
       console.log('[Focus Assistant] Content unchanged, skipping re-evaluation');
       return;
     }
-    
+
     const pageData = extractResult.pageData;
-    
+
     // Check if should exclude
     if (shouldExcludeUrl(pageData.url)) {
       console.log('[Focus Assistant] Excluded URL, skipping evaluation');
       return;
     }
-    
+
     // Check dwell time (skip if triggered manually)
     const dwellTime = this.getDwellTime();
     if (!skipDwellCheck && dwellTime < 3000) {
       console.log('[Focus Assistant] Not enough dwell time, skipping evaluation');
       return;
     }
-    
+
     console.log('[Focus Assistant] Evaluating page...', { url: pageData.url, dwellTime, contentChanged: extractResult.changed });
-    
+
     try {
       // Send to background for evaluation
       const response = await chrome.runtime.sendMessage({
@@ -254,21 +257,21 @@ class PageAnalyzer {
           activityScore: this.activityScore
         }
       });
-      
+
       if (response.success) {
         console.log('[Focus Assistant] Evaluation result:', response.data);
         this.hasEvaluated = true;
         this.lastEvaluationTime = Date.now();
-        
+
         // Show subtle indicator
         this.showEvaluationIndicator(response.data);
       }
-      
+
     } catch (error) {
       console.error('[Focus Assistant] Evaluation failed:', error);
     }
   }
-  
+
   /**
    * Show subtle visual indicator of evaluation result
    */
@@ -278,12 +281,12 @@ class PageAnalyzer {
     if (existing) {
       existing.remove();
     }
-    
+
     // Only show for distracting pages
     if (evaluation.label !== 'distracting') {
       return;
     }
-    
+
     // Create minimal indicator
     const indicator = document.createElement('div');
     indicator.id = 'focus-assistant-indicator';
@@ -304,13 +307,13 @@ class PageAnalyzer {
       transition: opacity 0.3s;
     `;
     indicator.textContent = '⚠️ Possible distraction';
-    
+
     // Click to dismiss
     indicator.addEventListener('click', () => {
       indicator.style.opacity = '0';
       setTimeout(() => indicator.remove(), 300);
     });
-    
+
     // Auto-dismiss after 10 seconds
     setTimeout(() => {
       if (indicator.parentNode) {
@@ -318,7 +321,7 @@ class PageAnalyzer {
         setTimeout(() => indicator.remove(), 300);
       }
     }, 10000);
-    
+
     document.body.appendChild(indicator);
   }
 }
@@ -333,7 +336,7 @@ if (shouldExcludeUrl(window.location.href)) {
 } else {
   // Initialize analyzer
   const analyzer = new PageAnalyzer();
-  
+
   // Wait for page to be fully loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -346,16 +349,16 @@ if (shouldExcludeUrl(window.location.href)) {
 
 function initializeAnalyzer(analyzer) {
   console.log('[Focus Assistant] Content script initialized');
-  
+
   // Store as global analyzer
   globalAnalyzer = analyzer;
-  
+
   // Extract initial page data (force on first load)
   analyzer.extractPageData(true);
-  
+
   // Start monitoring activity
   analyzer.startActivityMonitoring();
-  
+
   // Schedule evaluation after dwell time
   analyzer.scheduleEvaluation(10000); // 10 seconds
 }
@@ -366,13 +369,13 @@ function initializeAnalyzer(analyzer) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[Focus Assistant] Received message:', message.type);
-  
+
   if (message.type === 'PING') {
     // Respond to ping to confirm content script is loaded
     sendResponse({ success: true, loaded: true });
     return false;
   }
-  
+
   if (message.type === 'START_EVALUATION') {
     // Use the global analyzer if available, or create a new one
     if (!globalAnalyzer) {
@@ -380,27 +383,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       globalAnalyzer.extractPageData(true); // Force extract on first load
       globalAnalyzer.startActivityMonitoring();
     }
-    
+
     // Reset evaluation flag and perform evaluation
     globalAnalyzer.hasEvaluated = false;
     globalAnalyzer.dwellStartTime = Date.now();
-    
+
     // Force extract page data for manually triggered evaluations (new page load)
     globalAnalyzer.extractPageData(true);
-    
+
     // Skip dwell check for manually triggered evaluations
     globalAnalyzer.performEvaluation(true)
       .then(() => sendResponse({ success: true }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
-  
+
   if (message.type === 'REQUEST_FEEDBACK') {
     // User clicked "It's Relevant" in notification
     const analyzer = globalAnalyzer || new PageAnalyzer();
     const extractResult = analyzer.extractPageData(true);
     const pageData = extractResult.pageData || extractResult;
-    
+
     chrome.runtime.sendMessage({
       type: 'SUBMIT_FEEDBACK',
       data: {
@@ -412,15 +415,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       console.log('[Focus Assistant] Feedback submitted');
       sendResponse({ success: true });
     });
-    
+
     return true;
   }
-  
+
   if (message.type === 'EXTRACT_PAGE_DATA') {
     // Extract and return page data
     const analyzer = globalAnalyzer || new PageAnalyzer();
     const extractResult = analyzer.extractPageData(true);
     const pageData = extractResult.pageData || extractResult;
+    console.log('[Focus Assistant] Extracted page data:', {
+      title: pageData.title,
+      textLength: pageData.text?.length || 0,
+      textPreview: pageData.text?.substring(0, 100) || '(empty)'
+    });
     sendResponse({ success: true, data: pageData });
     return false;
   }
