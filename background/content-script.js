@@ -5,6 +5,12 @@
 let globalAnalyzer = null;
 
 // ============================================================================
+// CONSTANTS (duplicated from utils.js for content script isolation)
+// ============================================================================
+
+const DWELL_TIME_THRESHOLD = 5000; // 5 seconds before evaluation
+
+// ============================================================================
 // UTILITY FUNCTIONS (duplicated from utils.js for content script isolation)
 // ============================================================================
 
@@ -240,7 +246,7 @@ class PageAnalyzer {
 
     // Check dwell time (skip if triggered manually)
     const dwellTime = this.getDwellTime();
-    if (!skipDwellCheck && dwellTime < 3000) {
+    if (!skipDwellCheck && dwellTime < DWELL_TIME_THRESHOLD) {
       console.log('[Focus Assistant] Not enough dwell time, skipping evaluation');
       return;
     }
@@ -382,19 +388,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       globalAnalyzer = new PageAnalyzer();
       globalAnalyzer.extractPageData(true); // Force extract on first load
       globalAnalyzer.startActivityMonitoring();
+    } else {
+      // For existing analyzer on new page, reset dwell time
+      globalAnalyzer.dwellStartTime = Date.now();
     }
 
-    // Reset evaluation flag and perform evaluation
+    // Reset evaluation flag
     globalAnalyzer.hasEvaluated = false;
-    globalAnalyzer.dwellStartTime = Date.now();
 
-    // Force extract page data for manually triggered evaluations (new page load)
+    // Force extract page data for new page load
     globalAnalyzer.extractPageData(true);
 
-    // Skip dwell check for manually triggered evaluations
-    globalAnalyzer.performEvaluation(true)
-      .then(() => sendResponse({ success: true }))
-      .catch(error => sendResponse({ success: false, error: error.message }));
+    // Schedule evaluation after dwell threshold instead of evaluating immediately
+    // This ensures we respect the 5-second minimum dwell time
+    globalAnalyzer.scheduleEvaluation(DWELL_TIME_THRESHOLD);
+
+    sendResponse({ success: true });
     return true;
   }
 

@@ -7,7 +7,7 @@
 export const CONSTANTS = {
   // Detection thresholds
   RELEVANCE_THRESHOLD: 0.6,        // Score below this = distraction
-  DWELL_TIME_THRESHOLD: 10000,     // 10 seconds before evaluation
+  DWELL_TIME_THRESHOLD: 5000,      // 5 seconds before evaluation
   ACTIVITY_CHECK_INTERVAL: 5000,   // Check user activity every 5s
   
   // Learning parameters
