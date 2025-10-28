@@ -453,13 +453,6 @@ chrome.runtime.onStartup.addListener(async () => {
   await aiManager.checkAvailability();
 });
 
-// Re-check AI availability periodically or when requested
-// This ensures the popup gets the latest status
-setInterval(async () => {
-  Logger.debug('Periodic AI availability check');
-  await aiManager.checkAvailability();
-}, 60000); // Check every minute
-
 // ============================================================================
 // MESSAGE ROUTING
 // ============================================================================
