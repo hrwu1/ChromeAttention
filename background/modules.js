@@ -33,6 +33,40 @@ export class GoalManager {
       const summary = await this.aiManager.summarize(pageData.text);
       Logger.debug('AI Response (Summarize)', summary);
 
+      // Check if summary is empty or too short
+      if (!summary || summary.trim().length < 10) {
+        Logger.warn('Summary is empty or too short, using page text directly');
+        // Fall back to using a truncated version of the page text
+        const truncatedText = pageData.text.substring(0, 1000);
+        
+        const promptText = `Based on this page content, identify the user's likely work or study goal.
+
+Page Title: ${pageData.title}
+Page Content: ${truncatedText}
+
+Please respond in this exact JSON format:
+{
+  "goal": "A clear, one-sentence description of the task or goal",
+  "keywords": ["key", "terms", "related", "to", "goal"]
+}`;
+
+        Logger.debug('AI Request (Prompt - Extract Goal)', promptText);
+        const response = await this.aiManager.prompt(promptText);
+        Logger.debug('AI Response (Prompt - Extract Goal)', response);
+        const goalData = this.parseGoalResponse(response);
+        
+        const newGoal = await storage.addGoal({
+          text: goalData.goal,
+          keywords: goalData.keywords,
+          basePageUrl: pageData.url,
+          basePageTitle: pageData.title,
+          isActive: setAsActive
+        });
+
+        Logger.info('Goal extracted and added to list', newGoal);
+        return newGoal;
+      }
+
       // Step 2: Use Prompt API to structure the goal
       const promptText = `Based on this page content, identify the user's likely work or study goal.
 

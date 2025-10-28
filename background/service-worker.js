@@ -333,7 +333,11 @@ class AIManager {
       const summarizer = await api.create(summarizerOptions);
       const summary = await summarizer.summarize(text);
       
-      Logger.debug('Summary generated', summary.substring(0, 100));
+      Logger.debug('Summary generated', { 
+        length: summary.length, 
+        preview: summary.substring(0, 100),
+        full: summary
+      });
       return summary;
       
     } catch (error) {
