@@ -441,6 +441,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   Logger.info('Service worker initialized');
 });
 
+// Open sidebar when extension icon is clicked
+chrome.action.onClicked.addListener(async (tab) => {
+  // Open the side panel for the current window
+  await chrome.sidePanel.open({ windowId: tab.windowId });
+});
+
 // Check AI availability on startup
 chrome.runtime.onStartup.addListener(async () => {
   Logger.info('Browser started, checking AI availability');

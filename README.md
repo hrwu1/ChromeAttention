@@ -27,9 +27,12 @@ ChromeAttention/
 │   ├── content-script.js        # Content script + page analyzer
 │   └── utils.js                 # Logger, constants, and helper functions
 ├── ui/                           # User interface
-│   ├── popup.html               # Extension popup UI
-│   ├── popup.js                 # Popup controller
-│   ├── popup.css                # Popup styling
+│   ├── sidebar.html             # Extension sidebar UI
+│   ├── sidebar.js               # Sidebar controller
+│   ├── sidebar.css              # Sidebar styling
+│   ├── popup.html               # Legacy popup UI (deprecated)
+│   ├── popup.js                 # Legacy popup controller (deprecated)
+│   ├── popup.css                # Legacy popup styling (deprecated)
 │   └── blocked.html             # Blocked page display
 └── icons/                        # Extension icons
     ├── icon16.png
@@ -117,7 +120,7 @@ User provides feedback → Learning Engine
    - If not, see [AI_SETUP_GUIDE.md](AI_SETUP_GUIDE.md) for force download method
 
 5. **Install & Test Extension**
-   - Click the extension icon
+   - Click the extension icon to open the sidebar
    - Check "AI Status" section - should show "✓ Ready" for Language Model and Summarizer
    - Try "From Page" button to test AI goal extraction
    - If not available, check extension service worker console for detailed logs
