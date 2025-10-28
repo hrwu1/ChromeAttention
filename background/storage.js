@@ -278,7 +278,25 @@ export class StorageManager {
   
   async getCurrentSession() {
     const sessionData = await this.get(CONSTANTS.STORAGE_KEYS.SESSION_DATA, {});
-    return sessionData.current || null;
+    const session = sessionData.current || null;
+    
+    // Validate session data integrity
+    if (session) {
+      // Ensure timestamps are numbers
+      if (typeof session.startTime !== 'number') {
+        Logger.warn('Session startTime is not a number, fixing', { 
+          sessionId: session.id, 
+          startTime: session.startTime,
+          type: typeof session.startTime 
+        });
+        session.startTime = Date.now() - 60000; // Default to 1 minute ago
+      }
+      if (typeof session.endTime !== 'number') {
+        session.endTime = 0; // Will be set when session ends
+      }
+    }
+    
+    return session;
   }
   
   async startSession(goalId) {

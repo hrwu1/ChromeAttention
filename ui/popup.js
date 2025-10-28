@@ -592,7 +592,11 @@ function showReview(session) {
     if (session.startTime && session.endTime && session.endTime > session.startTime) {
       duration = Math.floor((session.endTime - session.startTime) / 60000);
     } else {
-      console.warn('Invalid session times', { startTime: session.startTime, endTime: session.endTime });
+      console.warn('Invalid session times in popup', { 
+        startTime: session.startTime, 
+        endTime: session.endTime,
+        sessionId: session.id 
+      });
     }
     
     const pageAnalysis = session.review.pageAnalysis;

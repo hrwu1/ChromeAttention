@@ -652,6 +652,12 @@ async function showHistory() {
             let duration = 0;
             if (session.startTime && session.endTime && session.endTime > session.startTime) {
                 duration = Math.floor((session.endTime - session.startTime) / 60000);
+            } else {
+                console.warn('Invalid session times in history', { 
+                    startTime: session.startTime, 
+                    endTime: session.endTime,
+                    sessionId: session.id 
+                });
             }
 
             const date = session.startTime ? new Date(session.startTime).toLocaleDateString() : 'Unknown date';
@@ -694,7 +700,12 @@ function showReview(session) {
         if (session.startTime && session.endTime && session.endTime > session.startTime) {
             duration = Math.floor((session.endTime - session.startTime) / 60000);
         } else {
-            console.warn('Invalid session times', { startTime: session.startTime, endTime: session.endTime });
+            console.warn('Invalid session times in review', { 
+                startTime: session.startTime, 
+                endTime: session.endTime,
+                sessionId: session.id,
+                hasReview: !!session.review
+            });
         }
 
         const pageAnalysis = session.review.pageAnalysis;

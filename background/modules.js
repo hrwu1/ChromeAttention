@@ -736,13 +736,22 @@ export class ReviewGenerator {
 
       // Validate session times
       if (!session.startTime || !session.endTime || session.endTime < session.startTime) {
-        Logger.error('Invalid session times', { startTime: session.startTime, endTime: session.endTime });
+        Logger.error('Invalid session times', { 
+          startTime: session.startTime, 
+          endTime: session.endTime,
+          startTimeType: typeof session.startTime,
+          endTimeType: typeof session.endTime,
+          sessionId: session.id,
+          active: session.active
+        });
         // Fix the session times if possible
-        if (!session.endTime) {
+        if (!session.endTime || session.endTime === 0) {
           session.endTime = Date.now();
+          Logger.warn('Fixed missing endTime', { sessionId: session.id, newEndTime: session.endTime });
         }
-        if (!session.startTime || session.startTime > session.endTime) {
+        if (!session.startTime || session.startTime === 0 || session.startTime > session.endTime) {
           session.startTime = session.endTime - 60000; // Assume 1 minute session
+          Logger.warn('Fixed missing/invalid startTime', { sessionId: session.id, newStartTime: session.startTime });
         }
       }
 
@@ -865,7 +874,10 @@ Format as 3 bullet points, clear and motivational.`;
     } else {
       Logger.warn('Invalid session duration in fallback review', {
         startTime: session.startTime,
-        endTime: session.endTime
+        endTime: session.endTime,
+        startTimeType: typeof session.startTime,
+        endTimeType: typeof session.endTime,
+        sessionId: session.id
       });
       // Estimate based on page dwell times if available
       if (pageAnalysis && pageAnalysis.totalRelevantTime + pageAnalysis.totalDistractionTime > 0) {
