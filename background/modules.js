@@ -42,9 +42,7 @@ Page Summary: ${summary}
 Please respond in this exact JSON format:
 {
   "goal": "A clear, one-sentence description of the task or goal",
-  "keywords": ["key", "terms", "related", "to", "goal"],
-  "suggestedWhitelist": ["domain1.com", "domain2.com"],
-  "suggestedBlacklist": ["socialmedia.com", "entertainment.com"]
+  "keywords": ["key", "terms", "related", "to", "goal"]
 }`;
 
       Logger.debug('AI Request (Prompt - Extract Goal)', promptText);
@@ -56,8 +54,6 @@ Please respond in this exact JSON format:
       const newGoal = await storage.addGoal({
         text: goalData.goal,
         keywords: goalData.keywords,
-        whitelist: goalData.suggestedWhitelist || [],
-        blacklist: goalData.suggestedBlacklist || [],
         basePageUrl: pageData.url,
         basePageTitle: pageData.title,
         isActive: setAsActive
@@ -83,9 +79,7 @@ Please respond in this exact JSON format:
         const parsed = JSON.parse(jsonMatch[0]);
         return {
           goal: parsed.goal || 'Focus on current task',
-          keywords: parsed.keywords || [],
-          suggestedWhitelist: parsed.suggestedWhitelist || [],
-          suggestedBlacklist: parsed.suggestedBlacklist || []
+          keywords: parsed.keywords || []
         };
       }
     } catch (e) {
@@ -95,9 +89,7 @@ Please respond in this exact JSON format:
     // Fallback: extract what we can from text
     return {
       goal: response.substring(0, 200),
-      keywords: [],
-      suggestedWhitelist: [],
-      suggestedBlacklist: []
+      keywords: []
     };
   }
 
@@ -111,8 +103,6 @@ Please respond in this exact JSON format:
     const newGoal = await storage.addGoal({
       text: goalText,
       keywords: keywords,
-      whitelist: [pageData.domain],
-      blacklist: [],
       basePageUrl: pageData.url,
       basePageTitle: pageData.title,
       isActive: setAsActive
