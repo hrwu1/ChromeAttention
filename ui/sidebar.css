@@ -539,7 +539,282 @@ body {
   color: #333;
 }
 
-/* Settings Form */
+/* Settings Tab Styles */
+.settings-section {
+  background: white;
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.settings-section-header h2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.settings-section-content {
+  padding: 20px;
+}
+
+.setting-group {
+  margin-bottom: 20px;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.setting-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.setting-value {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.setting-description {
+  font-size: 13px;
+  color: #888;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 28px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #1a1a1a;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* Custom Select */
+.intensity-selector {
+  position: relative;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  background: #f5f5f5;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+  transition: all 0.2s;
+}
+
+.custom-select:hover {
+  border-color: #d0d0d0;
+  background-color: #f0f0f0;
+}
+
+.custom-select:focus {
+  outline: none;
+  border-color: #667eea;
+  background-color: white;
+}
+
+/* Custom Range Slider */
+.custom-range {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e8e8e8;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.custom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.custom-range::-webkit-slider-thumb:hover {
+  background: #5568d3;
+  transform: scale(1.1);
+}
+
+.custom-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.custom-range::-moz-range-thumb:hover {
+  background: #5568d3;
+  transform: scale(1.1);
+}
+
+/* Checkbox Items */
+.setting-item-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+}
+
+.setting-item-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.setting-item-checkbox:hover {
+  color: #667eea;
+}
+
+/* AI Status Collapsible */
+.ai-status-collapsible {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.ai-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ai-status-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+}
+
+.collapse-icon-small {
+  font-size: 10px;
+  color: #999;
+  transition: transform 0.3s;
+}
+
+.ai-status-collapsible.collapsed .collapse-icon-small {
+  transform: rotate(-90deg);
+}
+
+.ai-status-content {
+  margin-top: 12px;
+  transition: max-height 0.3s ease-out, opacity 0.3s;
+  overflow: hidden;
+}
+
+.ai-status-collapsible.collapsed .ai-status-content {
+  max-height: 0 !important;
+  opacity: 0;
+  margin-top: 0;
+}
+
+/* Settings Actions */
+.settings-actions-container {
+  margin: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Legacy Settings Form (keep for compatibility) */
 .settings-form {
   display: flex;
   flex-direction: column;

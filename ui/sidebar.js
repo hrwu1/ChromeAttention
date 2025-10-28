@@ -304,14 +304,24 @@ function switchTab(tabName) {
 function setupCollapsibleSections() {
     const aiStatusHeader = document.getElementById('aiStatusHeader');
     if (aiStatusHeader) {
+        // Check if it's the new collapsible design or old section design
+        const aiStatusCollapsible = document.getElementById('aiStatusCollapsible');
         const aiStatusSection = aiStatusHeader.closest('.section');
 
         aiStatusHeader.addEventListener('click', () => {
-            aiStatusSection.classList.toggle('collapsed');
+            if (aiStatusCollapsible) {
+                aiStatusCollapsible.classList.toggle('collapsed');
+            } else if (aiStatusSection) {
+                aiStatusSection.classList.toggle('collapsed');
+            }
         });
 
         // Start collapsed by default
-        aiStatusSection.classList.add('collapsed');
+        if (aiStatusCollapsible) {
+            aiStatusCollapsible.classList.add('collapsed');
+        } else if (aiStatusSection) {
+            aiStatusSection.classList.add('collapsed');
+        }
     }
 }
 
@@ -558,6 +568,19 @@ async function loadSettingsIntoTab() {
     const cooldownMinutes = Math.round(currentSettings.notificationCooldown / 60000);
     document.getElementById('cooldownSlider').value = cooldownMinutes;
     document.getElementById('cooldownValue').textContent = cooldownMinutes;
+
+    // Set intensity selector if it exists
+    const intensitySelect = document.getElementById('intensitySelect');
+    if (intensitySelect) {
+        // Map settings to intensity level (you can customize this logic)
+        if (currentSettings.relevanceThreshold >= 0.7) {
+            intensitySelect.value = 'strict';
+        } else if (currentSettings.relevanceThreshold <= 0.4) {
+            intensitySelect.value = 'light';
+        } else {
+            intensitySelect.value = 'balanced';
+        }
+    }
 }
 
 async function saveSettings() {
@@ -566,12 +589,25 @@ async function saveSettings() {
         const cooldownMinutes = parseInt(document.getElementById('cooldownSlider').value);
         const cooldownMs = cooldownMinutes * 60000;
 
+        // Get intensity level and adjust threshold accordingly
+        const intensitySelect = document.getElementById('intensitySelect');
+        let threshold = parseFloat(document.getElementById('thresholdSlider').value);
+
+        if (intensitySelect) {
+            const intensity = intensitySelect.value;
+            if (intensity === 'strict') {
+                threshold = Math.max(threshold, 0.7);
+            } else if (intensity === 'light') {
+                threshold = Math.min(threshold, 0.4);
+            }
+        }
+
         const newSettings = {
             enabled: document.getElementById('enabledCheckbox').checked,
             autoGoalSetting: document.getElementById('autoGoalCheckbox').checked,
             detectionEnabled: document.getElementById('detectionCheckbox').checked,
             interventionEnabled: document.getElementById('interventionCheckbox').checked,
-            relevanceThreshold: parseFloat(document.getElementById('thresholdSlider').value),
+            relevanceThreshold: threshold,
             notificationCooldown: cooldownMs
         };
 
