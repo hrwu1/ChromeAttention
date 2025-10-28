@@ -28,7 +28,7 @@ body {
 .header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 20px;
+  padding: 20px 20px 16px 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   position: sticky;
   top: 0;
@@ -72,6 +72,55 @@ body {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 16px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: sticky;
+  top: 72px;
+  z-index: 99;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tab-button.active {
+  background: white;
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Tab Content */
+.tab-content-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
 }
 
 /* Sections */
@@ -720,6 +769,218 @@ body {
   background: #555;
 }
 
+/* Analytics Styles */
+.analytics-hero-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.hero-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.hero-icon {
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.hero-title {
+  flex: 1;
+}
+
+.hero-label {
+  font-size: 13px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.hero-goal {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hero-stat {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.hero-stat-icon {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.hero-stat-label {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.hero-stat-value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.hero-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 12px;
+}
+
+.hero-distractions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-distraction-icon {
+  font-size: 18px;
+}
+
+.hero-distraction-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-distraction-label {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.hero-distraction-detail {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.hero-interruptions {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hero-efficiency {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hero-efficiency-label {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.hero-efficiency-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.analytics-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.today-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.today-stat {
+  background: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.today-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  font-size: 18px;
+  color: white;
+}
+
+.today-stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.today-stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+#weekChart,
+#distractionsChart {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 200px;
+}
+
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
 /* Responsive adjustments for narrow sidebars */
 @media (max-width: 400px) {
   .header {
@@ -745,5 +1006,13 @@ body {
   
   .stat-value {
     font-size: 20px;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .today-stats {
+    grid-template-columns: 1fr;
   }
 }
