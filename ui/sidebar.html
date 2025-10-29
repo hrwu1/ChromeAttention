@@ -219,145 +219,94 @@
 
             <!-- Settings Tab -->
             <div class="tab-content" id="settingsTab">
-                <!-- Focus Mode Section -->
+                <!-- Interventions Section -->
                 <div class="settings-section">
                     <div class="settings-section-header">
-                        <h2>Focus Mode</h2>
-                    </div>
-                    <div class="settings-section-content">
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Intensity
-                                <span class="info-icon"
-                                    data-tooltip="Controls how strictly Focus Assistant monitors your browsing. Light: Gentle nudges. Balanced: Moderate monitoring. Strict: Strong intervention for distractions."></span>
-                            </label>
-                            <div class="intensity-selector">
-                                <select id="intensitySelect" class="custom-select">
-                                    <option value="balanced">⚖️ Balanced</option>
-                                    <option value="light">🌤️ Light</option>
-                                    <option value="strict">🔒 Strict</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Features Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>AI Features</h2>
+                        <h2>Interventions</h2>
                     </div>
                     <div class="settings-section-content">
                         <div class="setting-group">
                             <div class="setting-row">
                                 <div class="setting-info">
-                                    <div class="setting-title">
-                                        Task Suggestions
-                                        <span class="info-icon"
-                                            data-tooltip="Uses AI to automatically suggest goals based on your browsing patterns and page content."></span>
-                                    </div>
-                                    <div class="setting-description">Smart recommendations</div>
+                                    <div class="setting-title">Show Interventions</div>
+                                    <div class="setting-description">Display modal when distraction detected</div>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" id="autoGoalCheckbox">
+                                    <input type="checkbox" id="interventionCheckbox">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- AI Status (Collapsible) -->
-                        <div class="ai-status-collapsible" id="aiStatusCollapsible">
-                            <div class="ai-status-header" id="aiStatusHeader">
-                                <span class="ai-status-label">AI Status</span>
-                                <span class="collapse-icon-small">▼</span>
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                Relevance Threshold: <span id="thresholdValue" class="setting-value">0.6</span>
+                            </label>
+                            <input type="range" id="thresholdSlider" class="custom-range black-slider" min="0.3"
+                                max="0.9" step="0.1" value="0.6">
+                            <div class="slider-labels">
+                                <span>Lenient</span>
+                                <span>Strict</span>
                             </div>
-                            <div class="ai-status-content" id="aiStatusContent">
-                                <div class="status-grid">
-                                    <div class="status-item">
-                                        <span class="label">Language Model:</span>
-                                        <span class="value" id="aiLanguageModel">...</span>
-                                    </div>
-                                    <div class="status-item">
-                                        <span class="label">Summarizer:</span>
-                                        <span class="value" id="aiSummarizer">...</span>
-                                    </div>
-                                    <div class="status-item">
-                                        <span class="label">Writer:</span>
-                                        <span class="value" id="aiWriter">...</span>
-                                    </div>
-                                </div>
-                                <div id="aiSetupPrompt"
-                                    style="display: none; margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px; font-size: 12px;">
-                                    <p style="margin: 0 0 8px 0;"><strong>⚠️ AI Not Available</strong></p>
-                                    <p style="margin: 0 0 8px 0;"><strong>Hardware Requirements:</strong></p>
-                                    <ul style="margin: 0 0 8px 0; padding-left: 20px; font-size: 11px;">
-                                        <li>22 GB free disk space</li>
-                                        <li>4 GB+ GPU VRAM</li>
-                                        <li>Windows 10+, macOS 13+, or Linux</li>
-                                    </ul>
-                                    <p style="margin: 0 0 8px 0;">Enable Gemini Nano in Chrome:</p>
-                                    <ol style="margin: 0 0 8px 0; padding-left: 20px;">
-                                        <li>Visit <code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enable</li>
-                                        <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> →
-                                            Enable
-                                            BypassPerfRequirement</li>
-                                        <li>Restart Chrome</li>
-                                        <li>Chrome 138+: Model auto-downloads on first use</li>
-                                    </ol>
-                                    <p style="margin: 0; font-size: 11px; color: #666;">See AI_SETUP_GUIDE.md for
-                                        detailed
-                                        instructions.</p>
-                                </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">
+                                Notification Cooldown: <span id="cooldownValue" class="setting-value">1m</span>
+                            </label>
+                            <input type="range" id="cooldownSlider" class="custom-range black-slider discrete-slider"
+                                min="0" max="5" step="1" value="2" list="cooldown-markers">
+                            <datalist id="cooldown-markers">
+                                <option value="0" label="Off"></option>
+                                <option value="1" label="30s"></option>
+                                <option value="2" label="1m"></option>
+                                <option value="3" label="5m"></option>
+                                <option value="4" label="10m"></option>
+                                <option value="5" label="Never"></option>
+                            </datalist>
+                            <div class="slider-labels discrete-labels">
+                                <span>Off</span>
+                                <span>30s</span>
+                                <span>1m</span>
+                                <span>5m</span>
+                                <span>10m</span>
+                                <span>Never</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Advanced Settings Section -->
+                <!-- AI Status Section -->
                 <div class="settings-section">
                     <div class="settings-section-header">
-                        <h2>Advanced Settings</h2>
+                        <h2>AI Status</h2>
                     </div>
                     <div class="settings-section-content">
-                        <div class="setting-group">
-                            <label class="setting-item-checkbox">
-                                <input type="checkbox" id="enabledCheckbox">
-                                <span>Enable Focus Assistant</span>
-                                <span class="info-icon"
-                                    data-tooltip="Master switch to turn Focus Assistant on or off. When disabled, no monitoring or interventions will occur."></span>
-                            </label>
-                            <label class="setting-item-checkbox">
-                                <input type="checkbox" id="detectionCheckbox">
-                                <span>Distraction Detection</span>
-                                <span class="info-icon"
-                                    data-tooltip="Monitors pages you visit and detects when you're browsing content unrelated to your active goals."></span>
-                            </label>
-                            <label class="setting-item-checkbox">
-                                <input type="checkbox" id="interventionCheckbox">
-                                <span>Show Interventions</span>
-                                <span class="info-icon"
-                                    data-tooltip="Displays warning pages when you visit distracting sites, helping you stay on track with your goals."></span>
-                            </label>
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <span class="label">Language Model:</span>
+                                <span class="value" id="aiLanguageModel">...</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="label">Summarizer:</span>
+                                <span class="value" id="aiSummarizer">...</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="label">Writer:</span>
+                                <span class="value" id="aiWriter">...</span>
+                            </div>
                         </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Relevance Threshold: <span id="thresholdValue" class="setting-value">0.6</span>
-                                <span class="info-icon"
-                                    data-tooltip="How closely a page must match your goals to be considered relevant. Lower values (0.3) are more lenient, higher values (0.9) are stricter."></span>
-                            </label>
-                            <input type="range" id="thresholdSlider" class="custom-range" min="0.3" max="0.9" step="0.1"
-                                value="0.6">
-                        </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Notification Cooldown: <span id="cooldownValue" class="setting-value">5</span> minutes
-                                <span class="info-icon"
-                                    data-tooltip="Minimum time between distraction notifications. Prevents notification fatigue by limiting how often you're alerted."></span>
-                            </label>
-                            <input type="range" id="cooldownSlider" class="custom-range" min="1" max="30" step="1"
-                                value="5">
+                        <div id="aiSetupPrompt"
+                            style="display: none; margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 8px; font-size: 12px;">
+                            <p style="margin: 0 0 8px 0;"><strong>⚠️ AI Not Available</strong></p>
+                            <p style="margin: 0 0 8px 0;">Enable Gemini Nano in Chrome:</p>
+                            <ol style="margin: 0 0 8px 0; padding-left: 20px;">
+                                <li>Visit <code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enable</li>
+                                <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> → Enable
+                                    BypassPerfRequirement</li>
+                                <li>Restart Chrome</li>
+                            </ol>
+                            <p style="margin: 0; font-size: 11px; color: #666;">See AI_SETUP_GUIDE.md for details.</p>
                         </div>
                     </div>
                 </div>
@@ -365,7 +314,6 @@
                 <!-- Actions -->
                 <div class="settings-actions-container">
                     <button class="btn btn-primary btn-full" id="saveSettingsBtn">Save Settings</button>
-                    <button class="btn btn-secondary btn-full" id="viewHistoryBtn">View Session History</button>
                 </div>
             </div>
         </div>

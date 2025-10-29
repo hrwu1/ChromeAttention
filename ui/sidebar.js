@@ -343,16 +343,14 @@ function setupEventListeners() {
     document.getElementById('startSessionBtn').addEventListener('click', handleStartSession);
     document.getElementById('endSessionBtn').addEventListener('click', handleEndSession);
 
-    // Quick actions
-    document.getElementById('viewHistoryBtn').addEventListener('click', showHistory);
-
     // Settings (in tab)
     document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
     document.getElementById('thresholdSlider').addEventListener('input', (e) => {
         document.getElementById('thresholdValue').textContent = e.target.value;
     });
     document.getElementById('cooldownSlider').addEventListener('input', (e) => {
-        document.getElementById('cooldownValue').textContent = e.target.value;
+        const cooldownLabels = ['Off', '30s', '1m', '5m', '10m', 'Never'];
+        document.getElementById('cooldownValue').textContent = cooldownLabels[e.target.value];
     });
 
     // History
@@ -570,55 +568,48 @@ async function loadSettingsIntoTab() {
     // Load current settings
     const currentSettings = await sendMessage('GET_SETTINGS');
 
-    document.getElementById('enabledCheckbox').checked = currentSettings.enabled;
-    document.getElementById('autoGoalCheckbox').checked = currentSettings.autoGoalSetting;
-    document.getElementById('detectionCheckbox').checked = currentSettings.detectionEnabled;
     document.getElementById('interventionCheckbox').checked = currentSettings.interventionEnabled;
     document.getElementById('thresholdSlider').value = currentSettings.relevanceThreshold;
     document.getElementById('thresholdValue').textContent = currentSettings.relevanceThreshold;
 
-    // Convert notification cooldown from milliseconds to minutes for display
-    const cooldownMinutes = Math.round(currentSettings.notificationCooldown / 60000);
-    document.getElementById('cooldownSlider').value = cooldownMinutes;
-    document.getElementById('cooldownValue').textContent = cooldownMinutes;
-
-    // Set intensity selector if it exists
-    const intensitySelect = document.getElementById('intensitySelect');
-    if (intensitySelect) {
-        // Map settings to intensity level (you can customize this logic)
-        if (currentSettings.relevanceThreshold >= 0.7) {
-            intensitySelect.value = 'strict';
-        } else if (currentSettings.relevanceThreshold <= 0.4) {
-            intensitySelect.value = 'light';
-        } else {
-            intensitySelect.value = 'balanced';
-        }
+    // Convert notification cooldown from milliseconds to discrete values
+    // 0: Off (0ms), 1: 30s (30000ms), 2: 1m (60000ms), 3: 5m (300000ms), 4: 10m (600000ms), 5: Never (Infinity)
+    const cooldownMs = currentSettings.notificationCooldown;
+    let cooldownIndex = 2; // Default to 1m
+    const cooldownLabels = ['Off', '30s', '1m', '5m', '10m', 'Never'];
+    
+    if (cooldownMs === 0) {
+        cooldownIndex = 0;
+    } else if (cooldownMs === 30000) {
+        cooldownIndex = 1;
+    } else if (cooldownMs === 60000) {
+        cooldownIndex = 2;
+    } else if (cooldownMs === 300000) {
+        cooldownIndex = 3;
+    } else if (cooldownMs === 600000) {
+        cooldownIndex = 4;
+    } else if (cooldownMs >= 999999999) {
+        cooldownIndex = 5;
     }
+    
+    document.getElementById('cooldownSlider').value = cooldownIndex;
+    document.getElementById('cooldownValue').textContent = cooldownLabels[cooldownIndex];
 }
 
 async function saveSettings() {
     try {
-        // Convert notification cooldown from minutes to milliseconds
-        const cooldownMinutes = parseInt(document.getElementById('cooldownSlider').value);
-        const cooldownMs = cooldownMinutes * 60000;
+        // Convert discrete cooldown index to milliseconds
+        // 0: Off (0ms), 1: 30s (30000ms), 2: 1m (60000ms), 3: 5m (300000ms), 4: 10m (600000ms), 5: Never (999999999ms)
+        const cooldownIndex = parseInt(document.getElementById('cooldownSlider').value);
+        const cooldownValues = [0, 30000, 60000, 300000, 600000, 999999999];
+        const cooldownMs = cooldownValues[cooldownIndex];
 
-        // Get intensity level and adjust threshold accordingly
-        const intensitySelect = document.getElementById('intensitySelect');
-        let threshold = parseFloat(document.getElementById('thresholdSlider').value);
-
-        if (intensitySelect) {
-            const intensity = intensitySelect.value;
-            if (intensity === 'strict') {
-                threshold = Math.max(threshold, 0.7);
-            } else if (intensity === 'light') {
-                threshold = Math.min(threshold, 0.4);
-            }
-        }
+        const threshold = parseFloat(document.getElementById('thresholdSlider').value);
 
         const newSettings = {
-            enabled: document.getElementById('enabledCheckbox').checked,
-            autoGoalSetting: document.getElementById('autoGoalCheckbox').checked,
-            detectionEnabled: document.getElementById('detectionCheckbox').checked,
+            enabled: true, // Always enabled
+            autoGoalSetting: true, // Always enabled
+            detectionEnabled: true, // Always enabled
             interventionEnabled: document.getElementById('interventionCheckbox').checked,
             relevanceThreshold: threshold,
             notificationCooldown: cooldownMs
