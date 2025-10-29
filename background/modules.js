@@ -593,22 +593,39 @@ export class InterventionManager {
   async shouldIntervene(evaluation, pageData) {
     const settings = await storage.getSettings();
 
+    Logger.info('[Intervention] Checking if intervention needed', {
+      label: evaluation.label,
+      score: evaluation.score,
+      interventionEnabled: settings.interventionEnabled,
+      pageUrl: pageData.url
+    });
+
     if (!settings.interventionEnabled) {
+      Logger.info('[Intervention] Skipped - interventions disabled in settings');
       return false;
     }
 
     // Check if page is distracting
     if (evaluation.label !== 'distracting') {
+      Logger.info('[Intervention] Skipped - page not labeled as distracting', {
+        label: evaluation.label,
+        threshold: settings.relevanceThreshold
+      });
       return false;
     }
 
     // Check cooldown period
     const timeSinceLastNotification = Date.now() - this.lastNotificationTime;
     if (timeSinceLastNotification < settings.notificationCooldown) {
-      Logger.debug('Intervention on cooldown');
+      Logger.info('[Intervention] Skipped - on cooldown', {
+        timeSinceLastMs: timeSinceLastNotification,
+        cooldownMs: settings.notificationCooldown,
+        remainingMs: settings.notificationCooldown - timeSinceLastNotification
+      });
       return false;
     }
 
+    Logger.info('[Intervention] ✓ Intervention should be shown');
     return true;
   }
 
@@ -617,6 +634,12 @@ export class InterventionManager {
    */
   async showNotification(evaluation, goal) {
     try {
+      Logger.info('[Intervention] Showing notification', {
+        goalText: goal.text,
+        evaluationReason: evaluation.reason,
+        evaluationScore: evaluation.score
+      });
+
       const profile = await storage.getUserProfile();
 
       const notificationOptions = {
@@ -631,7 +654,15 @@ export class InterventionManager {
         priority: 1
       };
 
-      await chrome.notifications.create(`focus-${Date.now()}`, notificationOptions);
+      const notificationId = `focus-${Date.now()}`;
+      
+      // Create notification and verify it was created
+      const createdId = await chrome.notifications.create(notificationId, notificationOptions);
+      
+      if (!createdId) {
+        Logger.warn('[Intervention] Notification creation returned empty ID - may be blocked by system');
+        return false;
+      }
 
       this.lastNotificationTime = Date.now();
 
@@ -643,11 +674,14 @@ export class InterventionManager {
         });
       }
 
-      Logger.info('Notification shown');
+      Logger.info('[Intervention] ✓ Notification shown successfully', { 
+        notificationId: createdId,
+        message: 'Check system notification settings if you don\'t see it'
+      });
       return true;
 
     } catch (error) {
-      Logger.error('Failed to show notification', error);
+      Logger.error('[Intervention] Failed to show notification', error);
       return false;
     }
   }

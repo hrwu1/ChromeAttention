@@ -269,8 +269,14 @@ class PageAnalyzer {
         this.hasEvaluated = true;
         this.lastEvaluationTime = Date.now();
 
-        // Show subtle indicator
-        this.showEvaluationIndicator(response.data);
+        // Show intervention modal or subtle indicator
+        if (response.data.interventionShown && response.data.goal) {
+          // Show center modal for interventions
+          this.showInterventionModal(response.data, response.data.goal);
+        } else if (!response.data.interventionShown) {
+          // Show subtle indicator if intervention wasn't shown
+          this.showEvaluationIndicator(response.data);
+        }
       }
 
     } catch (error) {
@@ -329,6 +335,201 @@ class PageAnalyzer {
     }, 10000);
 
     document.body.appendChild(indicator);
+  }
+
+  /**
+   * Show center modal intervention popup
+   */
+  showInterventionModal(evaluation, goal) {
+    // Remove existing modal
+    const existing = document.getElementById('focus-assistant-modal');
+    if (existing) {
+      existing.remove();
+    }
+
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'focus-assistant-modal';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 2147483647;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease-out;
+    `;
+
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      animation: slideIn 0.3s ease-out;
+    `;
+
+    modal.innerHTML = `
+      <style>
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideIn {
+          from { transform: translateY(-20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      </style>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+        <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 600; color: #1a1a1a;">
+          Possible Distraction Detected
+        </h2>
+        <p style="margin: 0; font-size: 14px; color: #666;">
+          This page might not be related to your current goal
+        </p>
+      </div>
+      
+      <div style="background: #f5f5f5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+        <div style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+          Your Goal
+        </div>
+        <div style="font-size: 16px; color: #1a1a1a; font-weight: 500;">
+          ${goal.text}
+        </div>
+      </div>
+      
+      <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px 16px; margin-bottom: 24px; border-radius: 4px;">
+        <div style="font-size: 14px; color: #e65100;">
+          <strong>Reason:</strong> ${evaluation.reason}
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 12px;">
+        <button id="focus-assistant-back-btn" style="
+          flex: 1;
+          padding: 14px 24px;
+          background: #1976d2;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        ">
+          Back to Goal
+        </button>
+        <button id="focus-assistant-relevant-btn" style="
+          flex: 1;
+          padding: 14px 24px;
+          background: white;
+          color: #1976d2;
+          border: 2px solid #1976d2;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">
+          It's Relevant
+        </button>
+      </div>
+      
+      <button id="focus-assistant-dismiss-btn" style="
+        width: 100%;
+        margin-top: 12px;
+        padding: 10px;
+        background: transparent;
+        color: #999;
+        border: none;
+        font-size: 13px;
+        cursor: pointer;
+        transition: color 0.2s;
+      ">
+        Dismiss
+      </button>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Add hover effects
+    const backBtn = modal.querySelector('#focus-assistant-back-btn');
+    const relevantBtn = modal.querySelector('#focus-assistant-relevant-btn');
+    const dismissBtn = modal.querySelector('#focus-assistant-dismiss-btn');
+
+    backBtn.addEventListener('mouseenter', () => {
+      backBtn.style.background = '#1565c0';
+    });
+    backBtn.addEventListener('mouseleave', () => {
+      backBtn.style.background = '#1976d2';
+    });
+
+    relevantBtn.addEventListener('mouseenter', () => {
+      relevantBtn.style.background = '#e3f2fd';
+    });
+    relevantBtn.addEventListener('mouseleave', () => {
+      relevantBtn.style.background = 'white';
+    });
+
+    dismissBtn.addEventListener('mouseenter', () => {
+      dismissBtn.style.color = '#666';
+    });
+    dismissBtn.addEventListener('mouseleave', () => {
+      dismissBtn.style.color = '#999';
+    });
+
+    // Button handlers
+    backBtn.addEventListener('click', () => {
+      // Send message to background to navigate back to goal
+      chrome.runtime.sendMessage({
+        type: 'NAVIGATE_TO_GOAL'
+      });
+      overlay.remove();
+    });
+
+    relevantBtn.addEventListener('click', () => {
+      // Send feedback that it's relevant
+      chrome.runtime.sendMessage({
+        type: 'SUBMIT_FEEDBACK',
+        data: {
+          pageData: this.pageData,
+          userLabel: 'relevant',
+          systemScore: evaluation.score
+        }
+      });
+      overlay.remove();
+    });
+
+    dismissBtn.addEventListener('click', () => {
+      overlay.remove();
+    });
+
+    // Click overlay to dismiss
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.remove();
+      }
+    });
+
+    // ESC key to dismiss
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        overlay.remove();
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
   }
 }
 

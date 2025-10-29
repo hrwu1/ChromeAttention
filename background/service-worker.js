@@ -553,22 +553,40 @@ async function handleMessage(message, sender) {
       // Only evaluate if there's an active session
       const session = await storage.getCurrentSession();
       if (!session) {
-        return { score: 1.0, label: 'no-session', reason: 'No active session', matchedGoals: [] };
+        return { score: 1.0, label: 'no-session', reason: 'No active session', matchedGoals: [], interventionShown: false };
       }
 
       // Evaluate against all active goals
       const activeGoals = await goalManager.getActiveGoals();
       if (activeGoals.length === 0) {
-        return { score: 1.0, label: 'no-goal', reason: 'No active goals', matchedGoals: [] };
+        return { score: 1.0, label: 'no-goal', reason: 'No active goals', matchedGoals: [], interventionShown: false };
       }
 
       const evaluation = await detectionEngine.evaluatePage(data.pageData, activeGoals);
+      Logger.info('[EVALUATE_PAGE] Evaluation complete', {
+        url: data.pageData.url,
+        label: evaluation.label,
+        score: evaluation.score,
+        reason: evaluation.reason
+      });
 
       // Check if intervention needed
+      let interventionShown = false;
+      let goalForIntervention = null;
       if (await interventionManager.shouldIntervene(evaluation, data.pageData)) {
-        // Use the first active goal for notification context
-        const firstActiveGoal = activeGoals[0];
-        await interventionManager.showNotification(evaluation, firstActiveGoal);
+        Logger.info('[EVALUATE_PAGE] Intervention check passed, will show modal');
+        // Use the first active goal for intervention context
+        goalForIntervention = activeGoals[0];
+        interventionShown = true;
+        
+        // Update intervention count
+        await storage.updateSession({
+          interventions: (session.interventions || 0) + 1
+        });
+        
+        Logger.info('[EVALUATE_PAGE] Intervention will be shown in content script');
+      } else {
+        Logger.info('[EVALUATE_PAGE] Intervention check failed, no modal shown');
       }
 
       // Update session
@@ -614,7 +632,7 @@ async function handleMessage(message, sender) {
         });
       }
 
-      return evaluation;
+      return { ...evaluation, interventionShown, goal: goalForIntervention };
 
     // Learning
     case 'SUBMIT_FEEDBACK':
@@ -685,6 +703,50 @@ async function handleMessage(message, sender) {
 
     case 'UPDATE_SETTINGS':
       return await storage.updateSettings(data.settings);
+
+    // Navigate to goal
+    case 'NAVIGATE_TO_GOAL':
+      const navGoal = await goalManager.getCurrentGoal();
+      if (navGoal && navGoal.basePageUrl) {
+        // Try to find existing tab with the base page URL
+        const existingTabs = await chrome.tabs.query({ url: navGoal.basePageUrl });
+
+        if (existingTabs.length > 0) {
+          // Tab exists, switch to it
+          await chrome.tabs.update(existingTabs[0].id, { active: true });
+          await chrome.windows.update(existingTabs[0].windowId, { focused: true });
+          Logger.info('Switched to existing base page tab');
+        } else {
+          // Tab doesn't exist, open new one
+          await chrome.tabs.create({ url: navGoal.basePageUrl });
+          Logger.info('Opened new tab with base page URL');
+        }
+        return { success: true };
+      } else if (navGoal) {
+        // Fallback: search for goal if no base page URL
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(navGoal.text)}`;
+        await chrome.tabs.create({ url: searchUrl });
+        Logger.info('No base page URL, opened search');
+        return { success: true };
+      }
+      return { success: false, error: 'No goal set' };
+
+    // Test notification
+    case 'TEST_NOTIFICATION':
+      try {
+        const testId = await chrome.notifications.create(`test-${Date.now()}`, {
+          type: 'basic',
+          iconUrl: '../icons/icon128.png',
+          title: 'Focus Assistant Test',
+          message: 'If you see this, notifications are working! 🎉',
+          priority: 2
+        });
+        Logger.info('[TEST] Notification created with ID:', testId);
+        return { success: true, notificationId: testId };
+      } catch (error) {
+        Logger.error('[TEST] Failed to create notification:', error);
+        return { success: false, error: error.message };
+      }
 
     // Storage
     case 'GET_STORAGE_DATA':
