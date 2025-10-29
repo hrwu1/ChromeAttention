@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Indicator Test - Focus Assistant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        .test-section p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .code {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Focus Assistant - Loading Indicator Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Sidebar Loading Overlay</h2>
+        <p>This simulates the loading indicator shown when extracting a goal from a page or generating a session review.</p>
+        <button onclick="testSidebarLoading()">Test Sidebar Loading</button>
+        <div class="code">
+showLoading('Analyzing page...');
+// Simulates 3 seconds of processing
+setTimeout(() => hideLoading(), 3000);
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Page Processing Indicator</h2>
+        <p>This simulates the small indicator shown in the top-right corner when the AI is evaluating a page in the background.</p>
+        <button onclick="testPageProcessing()">Test Page Processing</button>
+        <div class="code">
+showProcessingIndicator();
+// Simulates 2 seconds of AI evaluation
+setTimeout(() => hideProcessingIndicator(), 2000);
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Sequential Loading States</h2>
+        <p>This demonstrates how the loading message updates during different stages of processing.</p>
+        <button onclick="testSequentialLoading()">Test Sequential Loading</button>
+        <div class="code">
+showLoading('Extracting page content...');
+setTimeout(() => {
+    showLoading('Analyzing page...');
+    setTimeout(() => hideLoading(), 2000);
+}, 1500);
+        </div>
+    </div>
+
+    <script>
+        // Sidebar loading functions (from sidebar.js)
+        function showLoading(message) {
+            hideLoading();
+            
+            const overlay = document.createElement('div');
+            overlay.id = 'loading-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(4px);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.2s ease-out;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                padding: 32px 40px;
+                border-radius: 12px;
+                text-align: center;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            const spinner = document.createElement('div');
+            spinner.style.cssText = `
+                width: 48px;
+                height: 48px;
+                border: 4px solid #e0e0e0;
+                border-top-color: #667eea;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                margin: 0 auto 20px;
+            `;
+            
+            const messageEl = document.createElement('div');
+            messageEl.style.cssText = `
+                font-size: 15px;
+                font-weight: 500;
+                color: #333;
+            `;
+            messageEl.textContent = message;
+            
+            const style = document.createElement('style');
+            style.id = 'loading-overlay-style';
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { transform: translateY(-20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            content.appendChild(spinner);
+            content.appendChild(messageEl);
+            overlay.appendChild(content);
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            const style = document.getElementById('loading-overlay-style');
+            if (overlay) overlay.remove();
+            if (style) style.remove();
+        }
+
+        // Page processing indicator functions (from content-script.js)
+        function showProcessingIndicator() {
+            hideProcessingIndicator();
+
+            const indicator = document.createElement('div');
+            indicator.id = 'focus-assistant-processing';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                padding: 10px 14px;
+                background: rgba(102, 126, 234, 0.95);
+                color: white;
+                border-radius: 8px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-size: 13px;
+                font-weight: 500;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: fadeIn 0.3s ease-out;
+            `;
+
+            const spinner = document.createElement('div');
+            spinner.style.cssText = `
+                width: 14px;
+                height: 14px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-top-color: white;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            `;
+
+            const style = document.createElement('style');
+            style.id = 'focus-assistant-processing-style';
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(-10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            const text = document.createElement('span');
+            text.textContent = 'AI analyzing...';
+
+            indicator.appendChild(spinner);
+            indicator.appendChild(text);
+            document.body.appendChild(indicator);
+        }
+
+        function hideProcessingIndicator() {
+            const indicator = document.getElementById('focus-assistant-processing');
+            const style = document.getElementById('focus-assistant-processing-style');
+            if (indicator) {
+                indicator.style.opacity = '0';
+                indicator.style.transform = 'translateY(-10px)';
+                setTimeout(() => indicator.remove(), 300);
+            }
+            if (style) style.remove();
+        }
+
+        // Test functions
+        function testSidebarLoading() {
+            showLoading('Analyzing page...');
+            setTimeout(() => hideLoading(), 3000);
+        }
+
+        function testPageProcessing() {
+            showProcessingIndicator();
+            setTimeout(() => hideProcessingIndicator(), 2000);
+        }
+
+        function testSequentialLoading() {
+            showLoading('Extracting page content...');
+            setTimeout(() => {
+                showLoading('Analyzing page...');
+                setTimeout(() => hideLoading(), 2000);
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

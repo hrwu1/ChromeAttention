@@ -253,6 +253,9 @@ class PageAnalyzer {
 
     console.log('[Focus Assistant] Evaluating page...', { url: pageData.url, dwellTime, contentChanged: extractResult.changed });
 
+    // Show processing indicator
+    this.showProcessingIndicator();
+
     try {
       // Send to background for evaluation
       const response = await chrome.runtime.sendMessage({
@@ -263,6 +266,9 @@ class PageAnalyzer {
           activityScore: this.activityScore
         }
       });
+
+      // Hide processing indicator
+      this.hideProcessingIndicator();
 
       if (response.success) {
         console.log('[Focus Assistant] Evaluation result:', response.data);
@@ -281,6 +287,88 @@ class PageAnalyzer {
 
     } catch (error) {
       console.error('[Focus Assistant] Evaluation failed:', error);
+      this.hideProcessingIndicator();
+    }
+  }
+
+  /**
+   * Show processing indicator while AI is evaluating
+   */
+  showProcessingIndicator() {
+    // Remove existing indicator
+    const existing = document.getElementById('focus-assistant-processing');
+    if (existing) {
+      existing.remove();
+    }
+
+    // Create processing indicator
+    const indicator = document.createElement('div');
+    indicator.id = 'focus-assistant-processing';
+    indicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px 14px;
+      background: rgba(102, 126, 234, 0.95);
+      color: white;
+      border-radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 0.3s ease-out;
+    `;
+
+    // Create spinner
+    const spinner = document.createElement('div');
+    spinner.style.cssText = `
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    `;
+
+    // Add animations
+    const style = document.createElement('style');
+    style.id = 'focus-assistant-processing-style';
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    const text = document.createElement('span');
+    text.textContent = 'AI analyzing...';
+
+    indicator.appendChild(spinner);
+    indicator.appendChild(text);
+    document.body.appendChild(indicator);
+  }
+
+  /**
+   * Hide processing indicator
+   */
+  hideProcessingIndicator() {
+    const indicator = document.getElementById('focus-assistant-processing');
+    const style = document.getElementById('focus-assistant-processing-style');
+    if (indicator) {
+      indicator.style.opacity = '0';
+      indicator.style.transform = 'translateY(-10px)';
+      setTimeout(() => indicator.remove(), 300);
+    }
+    if (style) {
+      style.remove();
     }
   }
 

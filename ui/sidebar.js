@@ -387,7 +387,7 @@ function hideGoalModal() {
 
 async function handleSetGoalFromPage() {
     try {
-        showLoading('Extracting goal from current page...');
+        showLoading('Extracting page content...');
 
         // Get current tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -409,6 +409,9 @@ async function handleSetGoalFromPage() {
             title: response.data.title,
             textLength: response.data.text?.length || 0
         });
+
+        // Update loading message for LLM processing
+        showLoading('Analyzing page...');
 
         // Extract goal and add to list
         const newGoal = await sendMessage('EXTRACT_GOAL', {
@@ -1173,11 +1176,94 @@ async function sendMessage(type, data = {}) {
 
 function showLoading(message) {
     console.log('Loading:', message);
-    // Could add a loading overlay in the future
+    
+    // Remove existing loading overlay if any
+    hideLoading();
+    
+    // Create loading overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease-out;
+    `;
+    
+    // Create loading content
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white;
+        padding: 32px 40px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    // Create spinner
+    const spinner = document.createElement('div');
+    spinner.style.cssText = `
+        width: 48px;
+        height: 48px;
+        border: 4px solid #e0e0e0;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 20px;
+    `;
+    
+    // Create message
+    const messageEl = document.createElement('div');
+    messageEl.style.cssText = `
+        font-size: 15px;
+        font-weight: 500;
+        color: #333;
+    `;
+    messageEl.textContent = message;
+    
+    // Add animations
+    const style = document.createElement('style');
+    style.id = 'loading-overlay-style';
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    content.appendChild(spinner);
+    content.appendChild(messageEl);
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
 }
 
 function hideLoading() {
     console.log('Loading complete');
+    const overlay = document.getElementById('loading-overlay');
+    const style = document.getElementById('loading-overlay-style');
+    if (overlay) {
+        overlay.remove();
+    }
+    if (style) {
+        style.remove();
+    }
 }
 
 function showSuccess(message) {
