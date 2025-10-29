@@ -58,6 +58,7 @@ const SCHEMAS = {
     autoGoalSetting: true,
     detectionEnabled: true,
     interventionEnabled: true,
+    enableSessionSummary: true,
     relevanceThreshold: CONSTANTS.RELEVANCE_THRESHOLD,
     dwellTimeThreshold: CONSTANTS.DWELL_TIME_THRESHOLD,
     notificationCooldown: CONSTANTS.NOTIFICATION_COOLDOWN

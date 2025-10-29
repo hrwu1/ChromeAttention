@@ -898,6 +898,37 @@ Format as 3 bullet points, clear and motivational.`;
   }
 
   /**
+   * Generate stats-only review (no AI summary)
+   */
+  generateStatsOnlyReview(session, goal) {
+    Logger.info('Generating stats-only review (AI summary disabled)', session.id);
+    
+    // Validate session times
+    if (!session.startTime || !session.endTime || session.endTime < session.startTime) {
+      Logger.error('Invalid session times', { 
+        startTime: session.startTime, 
+        endTime: session.endTime,
+        sessionId: session.id
+      });
+      // Fix the session times if possible
+      if (!session.endTime || session.endTime === 0) {
+        session.endTime = Date.now();
+      }
+      if (!session.startTime || session.startTime === 0 || session.startTime > session.endTime) {
+        session.startTime = session.endTime - 60000;
+      }
+    }
+    
+    const pageAnalysis = this.analyzePagesByTime(session.pagesVisited || []);
+    
+    return {
+      summary: null, // No AI summary
+      pageAnalysis: pageAnalysis,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
    * Fallback review without AI
    */
   fallbackReview(session, goal, pageAnalysis) {

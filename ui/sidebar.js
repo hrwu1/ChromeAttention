@@ -569,6 +569,7 @@ async function loadSettingsIntoTab() {
     const currentSettings = await sendMessage('GET_SETTINGS');
 
     document.getElementById('interventionCheckbox').checked = currentSettings.interventionEnabled;
+    document.getElementById('sessionSummaryCheckbox').checked = currentSettings.enableSessionSummary !== false;
     document.getElementById('thresholdSlider').value = currentSettings.relevanceThreshold;
     document.getElementById('thresholdValue').textContent = currentSettings.relevanceThreshold;
 
@@ -611,6 +612,7 @@ async function saveSettings() {
             autoGoalSetting: true, // Always enabled
             detectionEnabled: true, // Always enabled
             interventionEnabled: document.getElementById('interventionCheckbox').checked,
+            enableSessionSummary: document.getElementById('sessionSummaryCheckbox').checked,
             relevanceThreshold: threshold,
             notificationCooldown: cooldownMs
         };
@@ -705,8 +707,14 @@ function showReview(session) {
 
         const pageAnalysis = session.review.pageAnalysis;
 
-        let html = `
-      <div class="review-text">${session.review.summary.replace(/\n/g, '<br>')}</div>
+        let html = '';
+        
+        // Show AI summary if available
+        if (session.review.summary) {
+            html += `<div class="review-text">${session.review.summary.replace(/\n/g, '<br>')}</div>`;
+        }
+        
+        html += `
       <div class="review-stats">
         <p><strong>Duration:</strong> ${duration} minutes</p>
         <p><strong>Pages Visited:</strong> ${session.pagesVisited?.length || 0}</p>

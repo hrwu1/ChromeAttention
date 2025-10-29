@@ -675,15 +675,22 @@ async function handleMessage(message, sender) {
       // Get updated session after recording dwell time
       const updatedSession = await storage.getCurrentSession();
 
-      // Generate review only if goal exists
+      // Generate review based on settings
       const sessionGoalData = await goalManager.getCurrentGoal();
+      const sessionSettings = await storage.getSettings();
       let review = null;
 
       if (sessionGoalData) {
-        try {
-          review = await reviewGenerator.generateReview(updatedSession, sessionGoalData);
-        } catch (error) {
-          Logger.warn('Failed to generate review, ending session without review', error);
+        if (sessionSettings.enableSessionSummary !== false) {
+          // Generate full AI review
+          try {
+            review = await reviewGenerator.generateReview(updatedSession, sessionGoalData);
+          } catch (error) {
+            Logger.warn('Failed to generate review, ending session without review', error);
+          }
+        } else {
+          // Generate stats-only review (no AI summary)
+          review = reviewGenerator.generateStatsOnlyReview(updatedSession, sessionGoalData);
         }
       } else {
         Logger.info('No goal available, ending session without review');
