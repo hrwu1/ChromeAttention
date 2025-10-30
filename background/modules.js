@@ -47,6 +47,7 @@ Page Content: ${truncatedText}
 Please respond in this exact JSON format:
 {
   "goal": "A clear, one-sentence description of the task or goal",
+  "topic": "A short title (2-5 words) summarizing the goal",
   "keywords": ["key", "terms", "related", "to", "goal"]
 }`;
 
@@ -54,9 +55,10 @@ Please respond in this exact JSON format:
         const response = await this.aiManager.prompt(promptText);
         Logger.debug('AI Response (Prompt - Extract Goal)', response);
         const goalData = this.parseGoalResponse(response);
-
+        
         const newGoal = await storage.addGoal({
           text: goalData.goal,
+          topic: goalData.topic,
           keywords: goalData.keywords,
           basePageUrl: pageData.url,
           basePageTitle: pageData.title,
@@ -76,6 +78,7 @@ Page Summary: ${summary}
 Please respond in this exact JSON format:
 {
   "goal": "A clear, one-sentence description of the task or goal",
+  "topic": "A short title (2-5 words) summarizing the goal",
   "keywords": ["key", "terms", "related", "to", "goal"]
 }`;
 
@@ -87,6 +90,7 @@ Please respond in this exact JSON format:
       // Step 3: Add the goal to the goals list
       const newGoal = await storage.addGoal({
         text: goalData.goal,
+        topic: goalData.topic,
         keywords: goalData.keywords,
         basePageUrl: pageData.url,
         basePageTitle: pageData.title,
@@ -113,6 +117,7 @@ Please respond in this exact JSON format:
         const parsed = JSON.parse(jsonMatch[0]);
         return {
           goal: parsed.goal || 'Focus on current task',
+          topic: parsed.topic || parsed.goal || 'Focus on current task',
           keywords: parsed.keywords || []
         };
       }
@@ -121,8 +126,10 @@ Please respond in this exact JSON format:
     }
 
     // Fallback: extract what we can from text
+    const fallbackText = response.substring(0, 200);
     return {
-      goal: response.substring(0, 200),
+      goal: fallbackText,
+      topic: fallbackText,
       keywords: []
     };
   }
@@ -132,10 +139,12 @@ Please respond in this exact JSON format:
    */
   async fallbackGoalExtraction(pageData, setAsActive = true) {
     const goalText = `Working on: ${pageData.title}`;
+    const topicText = pageData.title.substring(0, 50); // Short topic from title
     const keywords = this.extractKeywordsSimple(pageData.title + ' ' + pageData.text);
 
     const newGoal = await storage.addGoal({
       text: goalText,
+      topic: topicText,
       keywords: keywords,
       basePageUrl: pageData.url,
       basePageTitle: pageData.title,
