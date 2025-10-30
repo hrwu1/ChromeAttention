@@ -853,12 +853,23 @@ Top relevant pages: ${topNormalPages || 'None'}
 Time on distracting pages: ${this.formatTime(pageAnalysis.totalDistractionTime)}
 Top distracting pages: ${topDistractionPages || 'None'}
 
-Create a review with:
-1. A brief summary highlighting productivity (1-2 sentences)
-2. Key accomplishment or observation about focus quality
-3. One actionable suggestion for the next session
+Instructions:
 
-Format as 3 bullet points, clear and motivational.`;
+- Output exactly ONE sentence (max 20 words).
+- Combine a brief productivity summary with kind, constructive feedback and a gentle, motivational next step.
+- Tone: warm, human, and encouraging, like a thoughtful mentor who holds you accountable without being harsh.
+- Mention real metrics (time, distractions) if provided. Otherwise, acknowledge inactivity and invite the user to begin again.
+- If Duration = 0 or Pages visited = 0, use a “let’s get started” or “reset and try again” framing.
+- Keep it natural, short, and friendly, avoid judgment or over-praise.
+- Use plain, conversational words and light emoji if appropriate.
+- Use ONLY data provided; never invent values or pages.
+
+Example outputs:
+
+- 42 focused minutes today — steady progress! Take a short break, then keep exploring those Assembly basics. 🌱
+- Two distractions popped up, but you stayed on track. Refocus next time and keep the rhythm going. 🎯
+- No real progress this round…it happens. Let’s reset and dive into your first Assembly tutorial. ⚡
+- Quiet session today. Take a breath, refocus, and start small. Even 10 minutes makes a difference. 💪`;
 
       Logger.debug('AI Request (Write - Generate Review)', promptText);
       const review = await this.aiManager.write(promptText);
