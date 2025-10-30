@@ -179,17 +179,7 @@ function createGoalElement(goal) {
         goalContent.appendChild(basePageInfo);
     }
 
-    const goalKeywords = document.createElement('div');
-    goalKeywords.className = 'goal-keywords';
-    if (goal.keywords && goal.keywords.length > 0) {
-        goal.keywords.slice(0, 5).forEach(keyword => {
-            const tag = document.createElement('span');
-            tag.className = 'keyword-tag';
-            tag.textContent = keyword;
-            goalKeywords.appendChild(tag);
-        });
-    }
-    goalContent.appendChild(goalKeywords);
+    // Keywords are hidden from display but still used by AI for relevance detection
 
     const goalActions = document.createElement('div');
     goalActions.className = 'goal-actions';
