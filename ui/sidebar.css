@@ -469,6 +469,9 @@ body {
     padding: 12px;
     border-radius: var(--border-radius-main);
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .stat-label {
@@ -477,12 +480,14 @@ body {
     margin-bottom: 4px;
     text-transform: uppercase;
     font-weight: 500;
+    display: block;
 }
 
 .stat-value {
     font-size: 20px;
     font-weight: 600;
     color: var(--text-color-primary);
+    display: block;
 }
 
 /* Buttons */
@@ -1289,6 +1294,12 @@ body {
 .analytics-hero-card .hero-stat {
     padding: 0;
     background: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.analytics-hero-card .hero-stat-icon {
+    margin-bottom: 2px;
 }
 
 .analytics-hero-card .hero-stat-label {
@@ -1952,6 +1963,9 @@ body[data-theme="cream-charcoal"] {
     padding: 12px !important;
     border-radius: var(--border-radius-main) !important;
     text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
 }
 
 #goalTab .stat-label {
@@ -1960,12 +1974,14 @@ body[data-theme="cream-charcoal"] {
     margin-bottom: 4px !important;
     text-transform: uppercase !important;
     font-weight: 500 !important;
+    display: block !important;
 }
 
 #goalTab .stat-value {
     font-size: 20px !important;
     font-weight: 600 !important;
     color: var(--text-color-primary) !important;
+    display: block !important;
 }
 
 /* Buttons */
@@ -2091,10 +2107,13 @@ body[data-theme="cream-charcoal"] {
     padding: 0 !important;
     background: none !important;
     min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 #goalTab .analytics-hero-card .hero-stat-icon {
     font-size: 14px !important;
+    margin-bottom: 2px !important;
 }
 
 #goalTab .analytics-hero-card .hero-stat-label {
