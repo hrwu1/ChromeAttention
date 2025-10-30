@@ -38,7 +38,7 @@ export class GoalManager {
         Logger.warn('Summary is empty or too short, using page text directly');
         // Fall back to using a truncated version of the page text
         const truncatedText = pageData.text.substring(0, 1000);
-        
+
         const promptText = `Based on this page content, identify the user's likely work or study goal.
 
 Page Title: ${pageData.title}
@@ -54,7 +54,7 @@ Please respond in this exact JSON format:
         const response = await this.aiManager.prompt(promptText);
         Logger.debug('AI Response (Prompt - Extract Goal)', response);
         const goalData = this.parseGoalResponse(response);
-        
+
         const newGoal = await storage.addGoal({
           text: goalData.goal,
           keywords: goalData.keywords,
@@ -655,10 +655,10 @@ export class InterventionManager {
       };
 
       const notificationId = `focus-${Date.now()}`;
-      
+
       // Create notification and verify it was created
       const createdId = await chrome.notifications.create(notificationId, notificationOptions);
-      
+
       if (!createdId) {
         Logger.warn('[Intervention] Notification creation returned empty ID - may be blocked by system');
         return false;
@@ -674,7 +674,7 @@ export class InterventionManager {
         });
       }
 
-      Logger.info('[Intervention] ✓ Notification shown successfully', { 
+      Logger.info('[Intervention] ✓ Notification shown successfully', {
         notificationId: createdId,
         message: 'Check system notification settings if you don\'t see it'
       });
@@ -770,8 +770,8 @@ export class ReviewGenerator {
 
       // Validate session times
       if (!session.startTime || !session.endTime || session.endTime < session.startTime) {
-        Logger.error('Invalid session times', { 
-          startTime: session.startTime, 
+        Logger.error('Invalid session times', {
+          startTime: session.startTime,
           endTime: session.endTime,
           startTimeType: typeof session.startTime,
           endTimeType: typeof session.endTime,
@@ -902,11 +902,11 @@ Format as 3 bullet points, clear and motivational.`;
    */
   generateStatsOnlyReview(session, goal) {
     Logger.info('Generating stats-only review (AI summary disabled)', session.id);
-    
+
     // Validate session times
     if (!session.startTime || !session.endTime || session.endTime < session.startTime) {
-      Logger.error('Invalid session times', { 
-        startTime: session.startTime, 
+      Logger.error('Invalid session times', {
+        startTime: session.startTime,
         endTime: session.endTime,
         sessionId: session.id
       });
@@ -918,9 +918,9 @@ Format as 3 bullet points, clear and motivational.`;
         session.startTime = session.endTime - 60000;
       }
     }
-    
+
     const pageAnalysis = this.analyzePagesByTime(session.pagesVisited || []);
-    
+
     return {
       summary: null, // No AI summary
       pageAnalysis: pageAnalysis,

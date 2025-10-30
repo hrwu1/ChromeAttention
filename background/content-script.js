@@ -514,6 +514,10 @@ class PageAnalyzer {
           font-weight: 600;
           cursor: pointer;
           transition: background 0.2s;
+          height: auto;
+          min-height: 48px;
+          line-height: normal;
+          box-sizing: border-box;
         ">
           Back to Goal
         </button>
@@ -528,6 +532,10 @@ class PageAnalyzer {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
+          height: auto;
+          min-height: 48px;
+          line-height: normal;
+          box-sizing: border-box;
         ">
           It's Relevant
         </button>
@@ -543,6 +551,10 @@ class PageAnalyzer {
         font-size: 13px;
         cursor: pointer;
         transition: color 0.2s;
+        height: auto;
+        min-height: 36px;
+        line-height: normal;
+        box-sizing: border-box;
       ">
         Dismiss
       </button>
