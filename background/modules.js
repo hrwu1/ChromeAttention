@@ -47,7 +47,18 @@ Page Content: ${truncatedText}
 Please respond in this exact JSON format:
 {
   "goal": "A clear, one-sentence description of the task or goal",
+  "topic": "A brief description for this goal",
   "keywords": ["key", "terms", "related", "to", "goal"]
+}
+
+Example:
+Page Content: "Avantor is hiring for roles like Onsite Coordinator, Sample Management Coordinator, and Lab Support Technician in Massachusetts, New York, and Pennsylvania to support scientific innovation and improve lab operations."
+
+Response:
+{
+  "goal": "The user likely wants to understand the company's key value proposition, current opening positions at the lab service team, and current employees' experience",
+  "topic": "understand organization value for job application",
+  "keywords": ["avantor", "lab services", "employee insights", "opening roles", "impact"]
 }`;
 
         Logger.debug('AI Request (Prompt - Extract Goal)', promptText);
@@ -76,7 +87,18 @@ Page Summary: ${summary}
 Please respond in this exact JSON format:
 {
   "goal": "A clear, one-sentence description of the task or goal",
+  "topic": "A brief description for this goal",
   "keywords": ["key", "terms", "related", "to", "goal"]
+}
+
+Example:
+Page Content: "Avantor is hiring for roles like Onsite Coordinator, Sample Management Coordinator, and Lab Support Technician in Massachusetts, New York, and Pennsylvania to support scientific innovation and improve lab operations."
+
+Response:
+{
+  "goal": "The user likely wants to understand the company's key value proposition, current opening positions at the lab service team, and current employees' experience",
+  "topic": "understand organization value for job application",
+  "keywords": ["avantor", "lab services", "employee insights", "opening roles", "impact"]
 }`;
 
       Logger.debug('AI Request (Prompt - Extract Goal)', promptText);
