@@ -8,6 +8,16 @@ let settings = null;
 let sessionUpdateInterval = null;
 let editingGoalId = null;  // Track which goal is being edited
 
+const THEMES = [
+    { id: 'default', name: 'Chrome', colors: ['#1A73E8', '#f8f9fa'] },
+    { id: 'sage-cream', name: 'Sage', colors: ['#6a8d73', '#faf8f2'] },
+    { id: 'dusty-blue', name: 'Blue', colors: ['#7d96b0', '#f4f3f2'] },
+    { id: 'beige-olive', name: 'Olive', colors: ['#707c4d', '#f5f1e8'] },
+    { id: 'gray-blush', name: 'Blush', colors: ['#e0b4b4', '#f7f7f7'] },
+    { id: 'sand-sky', name: 'Sky', colors: ['#87ceeb', '#fcf6e9'] },
+    { id: 'cream-charcoal', name: 'Charcoal', colors: ['#555555', '#f5f3ed'] }
+];
+
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -19,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     startSessionUpdateLoop();
     setupCollapsibleSections();
     setupTabs();
+    setupThemeSelector();
 });
 
 // ============================================================================
@@ -38,6 +49,8 @@ async function loadData() {
         currentGoal = data.goal;  // Legacy - first active goal
         currentSession = data.session;
         settings = data.settings;
+
+        applyTheme(settings.theme);
 
         // Update UI
         updateGoalsUI();
@@ -614,6 +627,8 @@ async function loadSettingsIntoTab() {
     document.getElementById('cooldownSlider').value = cooldownIndex;
     document.getElementById('cooldownValue').textContent = cooldownLabels[cooldownIndex];
 
+    updateActiveThemeOption();
+
     // Load domain lists
     await loadDomainLists();
 }
@@ -635,7 +650,8 @@ async function saveSettings() {
             interventionEnabled: document.getElementById('interventionCheckbox').checked,
             enableSessionSummary: document.getElementById('sessionSummaryCheckbox').checked,
             relevanceThreshold: threshold,
-            notificationCooldown: cooldownMs
+            notificationCooldown: cooldownMs,
+            theme: document.body.dataset.theme || 'default'
         };
 
         await sendMessage('UPDATE_SETTINGS', { settings: newSettings });
@@ -1463,6 +1479,45 @@ function showToast(message, type = 'info') {
         toast.style.animation = 'slideOut 0.3s ease-out';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+function applyTheme(themeId) {
+    const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
+    document.body.dataset.theme = theme.id;
+}
+
+function setupThemeSelector() {
+    const container = document.getElementById('themeSelector');
+    if (!container) return;
+
+    THEMES.forEach(theme => {
+        const option = document.createElement('div');
+        option.className = 'theme-option';
+        option.dataset.themeId = theme.id;
+        option.title = theme.name;
+
+        option.innerHTML = `
+            <div class="theme-swatch">
+                <div class="swatch-color" style="background-color: ${theme.colors[0]}"></div>
+                <div class="swatch-color" style="background-color: ${theme.colors[1]}"></div>
+            </div>
+            <div class="theme-label">${theme.name}</div>
+        `;
+
+        option.addEventListener('click', () => {
+            applyTheme(theme.id);
+            updateActiveThemeOption();
+        });
+
+        container.appendChild(option);
+    });
+}
+
+function updateActiveThemeOption() {
+    const currentTheme = document.body.dataset.theme || 'default';
+    document.querySelectorAll('.theme-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.themeId === currentTheme);
+    });
 }
 
 // Cleanup on unload
