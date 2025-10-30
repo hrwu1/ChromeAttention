@@ -711,6 +711,33 @@ async function handleMessage(message, sender) {
     case 'UPDATE_SETTINGS':
       return await storage.updateSettings(data.settings);
 
+    // Domain lists
+    case 'GET_WHITELIST':
+      return await storage.getWhitelist();
+
+    case 'ADD_TO_WHITELIST':
+      return await storage.addToWhitelist(data.domain);
+
+    case 'REMOVE_FROM_WHITELIST':
+      return await storage.removeFromWhitelist(data.domain);
+
+    case 'GET_BLACKLIST':
+      return await storage.getBlacklist();
+
+    case 'ADD_TO_BLACKLIST':
+      const result = await storage.addToBlacklist(data.domain);
+      // Check all open tabs and block any that match the newly blacklisted domain
+      const allTabs = await chrome.tabs.query({});
+      for (const tab of allTabs) {
+        if (tab.url && !shouldExcludeUrl(tab.url)) {
+          await checkAndBlockBlacklistedUrl(tab.id, tab.url);
+        }
+      }
+      return result;
+
+    case 'REMOVE_FROM_BLACKLIST':
+      return await storage.removeFromBlacklist(data.domain);
+
     // Navigate to goal
     case 'NAVIGATE_TO_GOAL':
       const navGoal = await goalManager.getCurrentGoal();
@@ -737,6 +764,57 @@ async function handleMessage(message, sender) {
         return { success: true };
       }
       return { success: false, error: 'No goal set' };
+
+    // Open sidebar settings
+    case 'OPEN_SIDEBAR_SETTINGS':
+      try {
+        // Get current window
+        const currentWindow = await chrome.windows.getCurrent();
+        // Open side panel
+        await chrome.sidePanel.open({ windowId: currentWindow.id });
+        Logger.info('Opened sidebar for settings');
+        return { success: true };
+      } catch (error) {
+        Logger.error('Failed to open sidebar', error);
+        return { success: false, error: error.message };
+      }
+
+    // Navigate from blocked page
+    case 'NAVIGATE_FROM_BLOCKED':
+      try {
+        const tabId = data.tabId;
+        Logger.info('Navigating from blocked page', { tabId });
+
+        // Try to go back in tab history
+        try {
+          await chrome.tabs.goBack(tabId);
+          Logger.info('Successfully navigated back in history');
+          return { success: true, method: 'history' };
+        } catch (historyError) {
+          Logger.info('No history available, trying goal base page', historyError.message);
+          
+          // No history, try to navigate to first active goal's base page
+          const activeGoals = await goalManager.getActiveGoals();
+          
+          if (activeGoals && activeGoals.length > 0) {
+            const firstGoal = activeGoals[0];
+            
+            if (firstGoal.basePageUrl) {
+              await chrome.tabs.update(tabId, { url: firstGoal.basePageUrl });
+              Logger.info('Navigated to goal base page', { url: firstGoal.basePageUrl });
+              return { success: true, method: 'goal', url: firstGoal.basePageUrl };
+            }
+          }
+          
+          // No goal with base page, close the tab
+          await chrome.tabs.remove(tabId);
+          Logger.info('No navigation options, closed tab');
+          return { success: true, method: 'close' };
+        }
+      } catch (error) {
+        Logger.error('Failed to navigate from blocked page', error);
+        return { success: false, error: error.message };
+      }
 
     // Test notification
     case 'TEST_NOTIFICATION':
@@ -905,12 +983,45 @@ async function ensureContentScript(tabId) {
 }
 
 /**
+ * Check if URL is blacklisted and redirect if needed
+ */
+async function checkAndBlockBlacklistedUrl(tabId, url) {
+  try {
+    const blacklist = await storage.getBlacklist();
+    if (blacklist.length === 0) return false;
+
+    const domain = new URL(url).hostname;
+    const isBlacklisted = blacklist.some(blacklistedDomain => 
+      domain.includes(blacklistedDomain)
+    );
+    
+    if (isBlacklisted) {
+      Logger.info('Blacklisted domain detected, redirecting to blocked page', { domain, url });
+      const blockedUrl = chrome.runtime.getURL('ui/blocked.html') + 
+        `?blocked=${encodeURIComponent(url)}&domain=${encodeURIComponent(domain)}`;
+      await chrome.tabs.update(tabId, { url: blockedUrl });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    Logger.error('Error checking blacklist', error);
+    return false;
+  }
+}
+
+/**
  * Trigger page evaluation
  */
 async function triggerPageEvaluation(tabId, url) {
   // Check if should exclude
   if (shouldExcludeUrl(url)) {
     Logger.debug('Excluded URL, skipping evaluation', url);
+    return;
+  }
+
+  // Check if domain is blacklisted - block immediately
+  const wasBlocked = await checkAndBlockBlacklistedUrl(tabId, url);
+  if (wasBlocked) {
     return;
   }
 

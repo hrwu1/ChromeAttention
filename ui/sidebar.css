@@ -1492,3 +1492,94 @@ body {
 .setting-group:last-child {
     margin-bottom: 0;
 }
+
+/* Domain Lists */
+.domain-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.domain-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.domain-list-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.domain-list-description {
+    font-size: 12px;
+    color: #666;
+    margin: 0 0 8px 0;
+}
+
+.domain-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.domain-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.domain-input:focus {
+    border-color: #667eea;
+}
+
+.domain-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.domain-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.domain-item-text {
+    color: #333;
+    word-break: break-all;
+}
+
+.domain-item-remove {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.domain-item-remove:hover {
+    color: #e53e3e;
+}
+
+.domain-items .no-data {
+    color: #999;
+    font-size: 12px;
+    text-align: center;
+    padding: 16px;
+    margin: 0;
+}

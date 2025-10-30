@@ -353,6 +353,16 @@ function setupEventListeners() {
         document.getElementById('cooldownValue').textContent = cooldownLabels[e.target.value];
     });
 
+    // Domain lists
+    document.getElementById('addWhitelistBtn').addEventListener('click', handleAddWhitelist);
+    document.getElementById('addBlacklistBtn').addEventListener('click', handleAddBlacklist);
+    document.getElementById('whitelistInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAddWhitelist();
+    });
+    document.getElementById('blacklistInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAddBlacklist();
+    });
+
     // History
     document.getElementById('closeHistoryBtn').addEventListener('click', hideHistory);
 
@@ -598,6 +608,9 @@ async function loadSettingsIntoTab() {
     
     document.getElementById('cooldownSlider').value = cooldownIndex;
     document.getElementById('cooldownValue').textContent = cooldownLabels[cooldownIndex];
+
+    // Load domain lists
+    await loadDomainLists();
 }
 
 async function saveSettings() {
@@ -630,6 +643,109 @@ async function saveSettings() {
         showError('Failed to save settings');
     }
 }
+
+// ============================================================================
+// DOMAIN LISTS
+// ============================================================================
+
+async function loadDomainLists() {
+    try {
+        const whitelist = await sendMessage('GET_WHITELIST');
+        const blacklist = await sendMessage('GET_BLACKLIST');
+        
+        renderDomainList('whitelistItems', whitelist, 'whitelist');
+        renderDomainList('blacklistItems', blacklist, 'blacklist');
+    } catch (error) {
+        console.error('Failed to load domain lists:', error);
+    }
+}
+
+function renderDomainList(containerId, domains, listType) {
+    const container = document.getElementById(containerId);
+    
+    if (domains.length === 0) {
+        container.innerHTML = `<p class="no-data">No ${listType === 'whitelist' ? 'whitelisted' : 'blacklisted'} domains</p>`;
+        return;
+    }
+    
+    container.innerHTML = domains.map(domain => `
+        <div class="domain-item">
+            <span class="domain-item-text">${domain}</span>
+            <button class="domain-item-remove" onclick="handleRemoveDomain('${domain}', '${listType}')">✕</button>
+        </div>
+    `).join('');
+}
+
+async function handleAddWhitelist() {
+    const input = document.getElementById('whitelistInput');
+    const domain = input.value.trim().toLowerCase();
+    
+    if (!domain) {
+        showError('Please enter a domain');
+        return;
+    }
+    
+    // Basic domain validation
+    if (domain.includes(' ') || !domain.includes('.')) {
+        showError('Please enter a valid domain (e.g., github.com)');
+        return;
+    }
+    
+    try {
+        await sendMessage('ADD_TO_WHITELIST', { domain });
+        input.value = '';
+        await loadDomainLists();
+        showSuccess('Domain added to whitelist');
+    } catch (error) {
+        console.error('Failed to add to whitelist:', error);
+        showError('Failed to add domain');
+    }
+}
+
+async function handleAddBlacklist() {
+    const input = document.getElementById('blacklistInput');
+    const domain = input.value.trim().toLowerCase();
+    
+    if (!domain) {
+        showError('Please enter a domain');
+        return;
+    }
+    
+    // Basic domain validation
+    if (domain.includes(' ') || !domain.includes('.')) {
+        showError('Please enter a valid domain (e.g., reddit.com)');
+        return;
+    }
+    
+    try {
+        await sendMessage('ADD_TO_BLACKLIST', { domain });
+        input.value = '';
+        await loadDomainLists();
+        showSuccess('Domain added to blacklist');
+    } catch (error) {
+        console.error('Failed to add to blacklist:', error);
+        showError('Failed to add domain');
+    }
+}
+
+async function handleRemoveDomain(domain, listType) {
+    try {
+        if (listType === 'whitelist') {
+            await sendMessage('REMOVE_FROM_WHITELIST', { domain });
+            showSuccess('Domain removed from whitelist');
+        } else {
+            await sendMessage('REMOVE_FROM_BLACKLIST', { domain });
+            showSuccess('Domain removed from blacklist');
+        }
+        await loadDomainLists();
+    } catch (error) {
+        console.error('Failed to remove domain:', error);
+        showError('Failed to remove domain');
+    }
+}
+
+// Make handleRemoveDomain globally accessible for onclick handlers
+window.handleRemoveDomain = handleRemoveDomain;
 
 // ============================================================================
 // HISTORY
