@@ -395,9 +395,13 @@
                     <button class="btn-close" id="closeGoalModalBtn">✕</button>
                 </div>
                 <div class="form-group">
-                    <label for="goalTextInput">Goal Description</label>
+                    <label for="goalTopicInput">Goal Title (shown in UI)</label>
+                    <input type="text" id="goalTopicInput" placeholder="e.g., ML Research">
+                </div>
+                <div class="form-group">
+                    <label for="goalTextInput">Full Goal Description (for AI analysis)</label>
                     <textarea id="goalTextInput" rows="3"
-                        placeholder="e.g., Research machine learning algorithms"></textarea>
+                        placeholder="e.g., Research machine learning algorithms for computer vision applications"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="goalKeywordsInput">Keywords (comma-separated)</label>

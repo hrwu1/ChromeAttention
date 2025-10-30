@@ -168,7 +168,7 @@ function createGoalElement(goal) {
 
     const goalText = document.createElement('div');
     goalText.className = 'goal-text';
-    goalText.textContent = goal.text;
+    goalText.textContent = goal.topic || goal.text; // Show topic if available, fallback to text
     goalContent.appendChild(goalText);
 
     // Show base page info if available
@@ -179,17 +179,7 @@ function createGoalElement(goal) {
         goalContent.appendChild(basePageInfo);
     }
 
-    const goalKeywords = document.createElement('div');
-    goalKeywords.className = 'goal-keywords';
-    if (goal.keywords && goal.keywords.length > 0) {
-        goal.keywords.slice(0, 5).forEach(keyword => {
-            const tag = document.createElement('span');
-            tag.className = 'keyword-tag';
-            tag.textContent = keyword;
-            goalKeywords.appendChild(tag);
-        });
-    }
-    goalContent.appendChild(goalKeywords);
+    // Keywords are hidden from display but still used by AI for relevance detection
 
     const goalActions = document.createElement('div');
     goalActions.className = 'goal-actions';
@@ -385,6 +375,7 @@ function setupEventListeners() {
 function showAddGoalModal() {
     editingGoalId = null;
     document.getElementById('goalModalTitle').textContent = 'Add New Goal';
+    document.getElementById('goalTopicInput').value = '';
     document.getElementById('goalTextInput').value = '';
     document.getElementById('goalKeywordsInput').value = '';
     document.getElementById('goalModal').style.display = 'flex';
@@ -443,12 +434,13 @@ async function handleSetGoalFromPage() {
 }
 
 async function handleSaveGoal() {
+    const goalTopic = document.getElementById('goalTopicInput').value.trim();
     const goalText = document.getElementById('goalTextInput').value.trim();
     const keywordsInput = document.getElementById('goalKeywordsInput').value.trim();
     const keywords = keywordsInput ? keywordsInput.split(',').map(k => k.trim()) : [];
 
-    if (!goalText) {
-        showError('Please enter a goal description');
+    if (!goalTopic || !goalText) {
+        showError('Please enter both goal title and description');
         return;
     }
 
@@ -457,13 +449,13 @@ async function handleSaveGoal() {
             // Update existing goal
             await sendMessage('UPDATE_GOAL', {
                 goalId: editingGoalId,
-                updates: { text: goalText, keywords: keywords }
+                updates: { topic: goalTopic, text: goalText, keywords: keywords }
             });
             showSuccess('Goal updated!');
         } else {
             // Add new goal
             await sendMessage('ADD_GOAL', {
-                goalData: { text: goalText, keywords: keywords, isActive: false }
+                goalData: { topic: goalTopic, text: goalText, keywords: keywords, isActive: false }
             });
             showSuccess('Goal added!');
         }
@@ -483,6 +475,7 @@ async function handleEditGoal(goalId) {
 
     editingGoalId = goalId;
     document.getElementById('goalModalTitle').textContent = 'Edit Goal';
+    document.getElementById('goalTopicInput').value = goal.topic || goal.text;
     document.getElementById('goalTextInput').value = goal.text;
     document.getElementById('goalKeywordsInput').value = goal.keywords ? goal.keywords.join(', ') : '';
     document.getElementById('goalModal').style.display = 'flex';
@@ -1075,7 +1068,7 @@ function updateActiveSessionCard() {
 
     // Goal name
     const goalText = currentSession.goals && currentSession.goals.length > 0
-        ? currentSession.goals[0].text
+        ? (currentSession.goals[0].topic || currentSession.goals[0].text)
         : 'Focus Session';
     document.getElementById('activeSessionGoal').textContent = goalText;
 
@@ -1105,7 +1098,7 @@ function updateLastSessionCard(session) {
 
     // Goal name
     const goalText = session.goals && session.goals.length > 0
-        ? session.goals[0].text
+        ? (session.goals[0].topic || session.goals[0].text)
         : 'Focus Session';
     document.getElementById('lastSessionGoal').textContent = goalText;
 

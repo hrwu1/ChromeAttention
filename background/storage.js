@@ -10,7 +10,8 @@ import { Logger, CONSTANTS } from './utils.js';
 const SCHEMAS = {
   goal: {
     id: '',
-    text: '',              // Human-readable goal description
+    text: '',              // Full goal description (sent to AI)
+    topic: '',             // Short title shown to user (2-5 words)
     keywords: [],          // Key terms related to the goal
     basePageUrl: '',       // The URL where the goal was set
     basePageTitle: '',     // The title of the base page
