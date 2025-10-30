@@ -37,9 +37,9 @@ export const CONSTANTS = {
   // AI Model settings
   AI_CONFIG: {
     TEMPERATURE: 0.7,
-    MAX_TOKENS: 1000,
-    SUMMARY_TYPE: 'key-points',
-    SUMMARY_LENGTH: 'medium'
+    MAX_TOKENS: 1000, // used to be 1000
+    SUMMARY_TYPE: 'tldr', // used to be key-points 
+    SUMMARY_LENGTH: 'short' // used to be medium
   }
 };
 
