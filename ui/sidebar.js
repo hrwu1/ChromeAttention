@@ -591,7 +591,7 @@ async function loadSettingsIntoTab() {
     const cooldownMs = currentSettings.notificationCooldown;
     let cooldownIndex = 2; // Default to 1m
     const cooldownLabels = ['Off', '30s', '1m', '5m', '10m', 'Never'];
-    
+
     if (cooldownMs === 0) {
         cooldownIndex = 0;
     } else if (cooldownMs === 30000) {
@@ -605,7 +605,7 @@ async function loadSettingsIntoTab() {
     } else if (cooldownMs >= 999999999) {
         cooldownIndex = 5;
     }
-    
+
     document.getElementById('cooldownSlider').value = cooldownIndex;
     document.getElementById('cooldownValue').textContent = cooldownLabels[cooldownIndex];
 
@@ -652,7 +652,7 @@ async function loadDomainLists() {
     try {
         const whitelist = await sendMessage('GET_WHITELIST');
         const blacklist = await sendMessage('GET_BLACKLIST');
-        
+
         renderDomainList('whitelistItems', whitelist, 'whitelist');
         renderDomainList('blacklistItems', blacklist, 'blacklist');
     } catch (error) {
@@ -662,35 +662,48 @@ async function loadDomainLists() {
 
 function renderDomainList(containerId, domains, listType) {
     const container = document.getElementById(containerId);
-    
+
     if (domains.length === 0) {
         container.innerHTML = `<p class="no-data">No ${listType === 'whitelist' ? 'whitelisted' : 'blacklisted'} domains</p>`;
         return;
     }
-    
-    container.innerHTML = domains.map(domain => `
-        <div class="domain-item">
-            <span class="domain-item-text">${domain}</span>
-            <button class="domain-item-remove" onclick="handleRemoveDomain('${domain}', '${listType}')">✕</button>
-        </div>
-    `).join('');
+
+    container.innerHTML = '';
+
+    domains.forEach(domain => {
+        const domainItem = document.createElement('div');
+        domainItem.className = 'domain-item';
+
+        const domainText = document.createElement('span');
+        domainText.className = 'domain-item-text';
+        domainText.textContent = domain;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'domain-item-remove';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => handleRemoveDomain(domain, listType));
+
+        domainItem.appendChild(domainText);
+        domainItem.appendChild(removeBtn);
+        container.appendChild(domainItem);
+    });
 }
 
 async function handleAddWhitelist() {
     const input = document.getElementById('whitelistInput');
     const domain = input.value.trim().toLowerCase();
-    
+
     if (!domain) {
         showError('Please enter a domain');
         return;
     }
-    
+
     // Basic domain validation
     if (domain.includes(' ') || !domain.includes('.')) {
         showError('Please enter a valid domain (e.g., github.com)');
         return;
     }
-    
+
     try {
         await sendMessage('ADD_TO_WHITELIST', { domain });
         input.value = '';
@@ -705,18 +718,18 @@ async function handleAddWhitelist() {
 async function handleAddBlacklist() {
     const input = document.getElementById('blacklistInput');
     const domain = input.value.trim().toLowerCase();
-    
+
     if (!domain) {
         showError('Please enter a domain');
         return;
     }
-    
+
     // Basic domain validation
     if (domain.includes(' ') || !domain.includes('.')) {
         showError('Please enter a valid domain (e.g., reddit.com)');
         return;
     }
-    
+
     try {
         await sendMessage('ADD_TO_BLACKLIST', { domain });
         input.value = '';
@@ -769,10 +782,10 @@ async function showHistory() {
             if (session.startTime && session.endTime && session.endTime > session.startTime) {
                 duration = Math.floor((session.endTime - session.startTime) / 60000);
             } else {
-                console.warn('Invalid session times in history', { 
-                    startTime: session.startTime, 
+                console.warn('Invalid session times in history', {
+                    startTime: session.startTime,
                     endTime: session.endTime,
-                    sessionId: session.id 
+                    sessionId: session.id
                 });
             }
 
@@ -816,8 +829,8 @@ function showReview(session) {
         if (session.startTime && session.endTime && session.endTime > session.startTime) {
             duration = Math.floor((session.endTime - session.startTime) / 60000);
         } else {
-            console.warn('Invalid session times in review', { 
-                startTime: session.startTime, 
+            console.warn('Invalid session times in review', {
+                startTime: session.startTime,
                 endTime: session.endTime,
                 sessionId: session.id,
                 hasReview: !!session.review
@@ -827,12 +840,12 @@ function showReview(session) {
         const pageAnalysis = session.review.pageAnalysis;
 
         let html = '';
-        
+
         // Show AI summary if available
         if (session.review.summary) {
             html += `<div class="review-text">${session.review.summary.replace(/\n/g, '<br>')}</div>`;
         }
-        
+
         html += `
       <div class="review-stats">
         <p><strong>Duration:</strong> ${duration} minutes</p>
@@ -1071,12 +1084,12 @@ function updateActiveSessionCard() {
     document.getElementById('activeSessionTime').textContent = formatDwellTime(duration);
 
     // Pages visited
-    document.getElementById('activeSessionPages').textContent = 
+    document.getElementById('activeSessionPages').textContent =
         (currentSession.pagesVisited?.length || 0).toString();
 
     // Distractions
     const distractionCount = currentSession.distractions || 0;
-    document.getElementById('activeSessionDistractions').textContent = 
+    document.getElementById('activeSessionDistractions').textContent =
         `${distractionCount} detected`;
 }
 
@@ -1292,10 +1305,10 @@ async function sendMessage(type, data = {}) {
 
 function showLoading(message) {
     console.log('Loading:', message);
-    
+
     // Remove existing loading overlay if any
     hideLoading();
-    
+
     // Create loading overlay
     const overlay = document.createElement('div');
     overlay.id = 'loading-overlay';
@@ -1313,7 +1326,7 @@ function showLoading(message) {
         justify-content: center;
         animation: fadeIn 0.2s ease-out;
     `;
-    
+
     // Create loading content
     const content = document.createElement('div');
     content.style.cssText = `
@@ -1324,7 +1337,7 @@ function showLoading(message) {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         animation: slideIn 0.3s ease-out;
     `;
-    
+
     // Create spinner
     const spinner = document.createElement('div');
     spinner.style.cssText = `
@@ -1336,7 +1349,7 @@ function showLoading(message) {
         animation: spin 0.8s linear infinite;
         margin: 0 auto 20px;
     `;
-    
+
     // Create message
     const messageEl = document.createElement('div');
     messageEl.style.cssText = `
@@ -1345,7 +1358,7 @@ function showLoading(message) {
         color: #333;
     `;
     messageEl.textContent = message;
-    
+
     // Add animations
     const style = document.createElement('style');
     style.id = 'loading-overlay-style';
@@ -1363,7 +1376,7 @@ function showLoading(message) {
         }
     `;
     document.head.appendChild(style);
-    
+
     content.appendChild(spinner);
     content.appendChild(messageEl);
     overlay.appendChild(content);
