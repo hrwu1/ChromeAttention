@@ -50,7 +50,7 @@ async function loadData() {
         currentSession = data.session;
         settings = data.settings;
 
-        applyTheme(settings.theme);
+        applyTheme(settings.theme || 'default');
 
         // Update UI
         updateGoalsUI();
@@ -1512,9 +1512,11 @@ function setupThemeSelector() {
             <div class="theme-label">${theme.name}</div>
         `;
 
-        option.addEventListener('click', () => {
+        option.addEventListener('click', async () => {
             applyTheme(theme.id);
             updateActiveThemeOption();
+            // Save theme selection immediately
+            await saveSettings();
         });
 
         container.appendChild(option);
