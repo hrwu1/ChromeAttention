@@ -224,10 +224,12 @@ function createGoalElement(goal) {
 function updateSessionUI() {
   const noSession = document.getElementById('noSession');
   const sessionDisplay = document.getElementById('sessionDisplay');
+  const sessionStats = sessionDisplay.querySelector('.session-stats');
   
   if (currentSession) {
     noSession.style.display = 'none';
     sessionDisplay.style.display = 'block';
+    if (sessionStats) sessionStats.style.display = 'flex';
     
     // Update stats
     const duration = Date.now() - currentSession.startTime;
@@ -246,6 +248,10 @@ function updateSessionUI() {
   } else {
     noSession.style.display = 'block';
     sessionDisplay.style.display = 'none';
+    if (sessionStats) sessionStats.style.display = 'none';
+    document.getElementById('sessionDuration').textContent = '0m';
+    document.getElementById('sessionPages').textContent = '0';
+    document.getElementById('sessionDistractions').textContent = '0';
   }
 }
 

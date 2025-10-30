@@ -239,11 +239,13 @@ function createGoalElement(goal) {
 function updateSessionUI() {
     const noSession = document.getElementById('noSession');
     const sessionDisplay = document.getElementById('sessionDisplay');
+    const sessionStats = sessionDisplay.querySelector('.session-stats');
     const endSessionBtn = document.getElementById('endSessionBtn');
 
     if (currentSession) {
         noSession.style.display = 'none';
         sessionDisplay.style.display = 'flex'; // Use flex for alignment
+        if (sessionStats) sessionStats.style.display = 'grid';
         if (endSessionBtn) endSessionBtn.disabled = false;
 
         // Update stats
@@ -263,7 +265,13 @@ function updateSessionUI() {
     } else {
         noSession.style.display = 'block';
         sessionDisplay.style.display = 'none';
+        if (sessionStats) sessionStats.style.display = 'none';
         if (endSessionBtn) endSessionBtn.disabled = true;
+
+        // Reset stats for next time
+        document.getElementById('sessionDuration').textContent = '0m';
+        document.getElementById('sessionPages').textContent = '0';
+        document.getElementById('sessionDistractions').textContent = '0';
     }
 }
 
