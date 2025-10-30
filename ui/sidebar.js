@@ -153,7 +153,9 @@ function updateGoalsUI() {
 
 function createGoalElement(goal) {
     const goalItem = document.createElement('div');
-    goalItem.className = 'goal-item' + (goal.isDone ? ' goal-done' : '');
+    goalItem.className = 'goal-item';
+    if (goal.isDone) goalItem.classList.add('goal-done');
+    if (goal.isActive && !goal.isDone) goalItem.classList.add('goal-active');
     goalItem.dataset.goalId = goal.id;
 
     const checkbox = document.createElement('input');
@@ -168,10 +170,10 @@ function createGoalElement(goal) {
 
     const goalText = document.createElement('div');
     goalText.className = 'goal-text';
-    goalText.textContent = goal.topic || goal.text; // Show topic if available, fallback to text
+    goalText.textContent = goal.topic || goal.text;
+    goalText.title = goal.topic || goal.text;
     goalContent.appendChild(goalText);
 
-    // Show base page info if available
     if (goal.basePageTitle && goal.basePageUrl) {
         const basePageInfo = document.createElement('div');
         basePageInfo.className = 'goal-base-page';
@@ -179,32 +181,39 @@ function createGoalElement(goal) {
         goalContent.appendChild(basePageInfo);
     }
 
-    // Keywords are hidden from display but still used by AI for relevance detection
-
     const goalActions = document.createElement('div');
     goalActions.className = 'goal-actions';
 
     if (!goal.isDone) {
         const editBtn = document.createElement('button');
         editBtn.className = 'btn-icon';
-        editBtn.textContent = '✏️';
+        editBtn.innerHTML = '✏️';
         editBtn.title = 'Edit';
-        editBtn.addEventListener('click', () => handleEditGoal(goal.id));
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleEditGoal(goal.id);
+        });
         goalActions.appendChild(editBtn);
 
         const doneBtn = document.createElement('button');
         doneBtn.className = 'btn-icon';
-        doneBtn.textContent = '✓';
+        doneBtn.innerHTML = '✓';
         doneBtn.title = 'Mark as done';
-        doneBtn.addEventListener('click', () => handleMarkGoalDone(goal.id));
+        doneBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleMarkGoalDone(goal.id);
+        });
         goalActions.appendChild(doneBtn);
     }
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn-icon';
-    deleteBtn.textContent = '🗑️';
+    deleteBtn.innerHTML = '🗑️';
     deleteBtn.title = 'Delete';
-    deleteBtn.addEventListener('click', () => handleDeleteGoal(goal.id));
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleDeleteGoal(goal.id)
+    });
     goalActions.appendChild(deleteBtn);
 
     goalItem.appendChild(checkbox);
