@@ -206,56 +206,31 @@
 
             <!-- Settings Tab -->
             <div class="tab-content" id="settingsTab">
-                <!-- Interventions Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>Interventions</h2>
-                    </div>
-                    <div class="settings-section-content">
-                        <div class="setting-group">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-title">Show Interventions</div>
-                                    <div class="setting-description">Display modal when distraction detected</div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="interventionCheckbox">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                        </div>
+                <!-- Focus Settings Section -->
+                <div class="section">
+                    <h2>Focus Settings</h2>
 
-                        <div class="setting-group">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-title">Generate AI Session Summary</div>
-                                    <div class="setting-description">Use AI to create session review summaries</div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="sessionSummaryCheckbox">
-                                    <span class="toggle-slider"></span>
-                                </label>
+                    <div class="settings-stats-grid">
+                        <div class="setting-stat-card">
+                            <div class="setting-stat-header">
+                                <span class="setting-stat-label">Relevance Threshold</span>
+                                <span class="setting-stat-value" id="thresholdValue">0.6</span>
                             </div>
-                        </div>
-
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Relevance Threshold: <span id="thresholdValue" class="setting-value">0.6</span>
-                            </label>
-                            <input type="range" id="thresholdSlider" class="custom-range black-slider" min="0.3"
-                                max="0.9" step="0.1" value="0.6">
+                            <input type="range" id="thresholdSlider" class="custom-range" min="0.3" max="0.9" step="0.1"
+                                value="0.6">
                             <div class="slider-labels">
                                 <span>Lenient</span>
                                 <span>Strict</span>
                             </div>
                         </div>
 
-                        <div class="setting-group">
-                            <label class="setting-label">
-                                Notification Cooldown: <span id="cooldownValue" class="setting-value">1m</span>
-                            </label>
-                            <input type="range" id="cooldownSlider" class="custom-range black-slider discrete-slider"
-                                min="0" max="5" step="1" value="2" list="cooldown-markers">
+                        <div class="setting-stat-card">
+                            <div class="setting-stat-header">
+                                <span class="setting-stat-label">Notification Cooldown</span>
+                                <span class="setting-stat-value" id="cooldownValue">1m</span>
+                            </div>
+                            <input type="range" id="cooldownSlider" class="custom-range discrete-slider" min="0" max="5"
+                                step="1" value="2" list="cooldown-markers">
                             <datalist id="cooldown-markers">
                                 <option value="0" label="Off"></option>
                                 <option value="1" label="30s"></option>
@@ -274,122 +249,141 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="settings-toggles">
+                        <div class="setting-toggle-row">
+                            <div class="setting-toggle-info">
+                                <div class="setting-toggle-title">Show Interventions</div>
+                                <div class="setting-toggle-description">Display modal when distraction detected</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="interventionCheckbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="setting-toggle-row">
+                            <div class="setting-toggle-info">
+                                <div class="setting-toggle-title">AI Session Summary</div>
+                                <div class="setting-toggle-description">Generate review summaries after sessions</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="sessionSummaryCheckbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Domain Lists Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>Domain Lists</h2>
+                <div class="section">
+                    <h2>Domain Lists</h2>
+
+                    <div class="domain-list-card">
+                        <div class="domain-list-header">
+                            <span class="domain-list-icon">✅</span>
+                            <div class="domain-list-title-group">
+                                <h3>Whitelist</h3>
+                                <p>Always marked as relevant</p>
+                            </div>
+                        </div>
+                        <div class="domain-input-group">
+                            <input type="text" id="whitelistInput" placeholder="e.g., github.com" class="domain-input">
+                            <button class="btn btn-primary btn-small" id="addWhitelistBtn">Add</button>
+                        </div>
+                        <div class="domain-items" id="whitelistItems">
+                            <p class="no-data">No whitelisted domains</p>
+                        </div>
                     </div>
-                    <div class="settings-section-content">
-                        <div class="domain-list-container">
-                            <div class="domain-list-section">
-                                <h3 class="domain-list-title">✅ Whitelist</h3>
-                                <p class="domain-list-description">Domains always marked as relevant</p>
-                                <div class="domain-input-group">
-                                    <input type="text" id="whitelistInput" placeholder="e.g., github.com" class="domain-input">
-                                    <button class="btn btn-primary btn-small" id="addWhitelistBtn">Add</button>
-                                </div>
-                                <div class="domain-items" id="whitelistItems">
-                                    <p class="no-data">No whitelisted domains</p>
-                                </div>
+
+                    <div class="domain-list-card">
+                        <div class="domain-list-header">
+                            <span class="domain-list-icon">🚫</span>
+                            <div class="domain-list-title-group">
+                                <h3>Blacklist</h3>
+                                <p>Always marked as distracting</p>
                             </div>
-                            
-                            <div class="domain-list-section">
-                                <h3 class="domain-list-title">🚫 Blacklist</h3>
-                                <p class="domain-list-description">Domains always marked as distracting</p>
-                                <div class="domain-input-group">
-                                    <input type="text" id="blacklistInput" placeholder="e.g., reddit.com" class="domain-input">
-                                    <button class="btn btn-primary btn-small" id="addBlacklistBtn">Add</button>
-                                </div>
-                                <div class="domain-items" id="blacklistItems">
-                                    <p class="no-data">No blacklisted domains</p>
-                                </div>
-                            </div>
+                        </div>
+                        <div class="domain-input-group">
+                            <input type="text" id="blacklistInput" placeholder="e.g., reddit.com" class="domain-input">
+                            <button class="btn btn-primary btn-small" id="addBlacklistBtn">Add</button>
+                        </div>
+                        <div class="domain-items" id="blacklistItems">
+                            <p class="no-data">No blacklisted domains</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Theme Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header collapsible" id="themeHeader">
-                        <h2>Theme</h2>
-                        <span class="collapse-icon">▼</span>
-                    </div>
-                    <div class="settings-section-content" id="themeContent">
-                        <div class="theme-selector">
-                            <div class="theme-option" data-theme="default">
-                                <div class="theme-preview theme-preview-default"></div>
-                                <div class="theme-name">Default</div>
-                            </div>
-                            <div class="theme-option" data-theme="ocean">
-                                <div class="theme-preview theme-preview-ocean"></div>
-                                <div class="theme-name">Ocean</div>
-                            </div>
-                            <div class="theme-option" data-theme="forest">
-                                <div class="theme-preview theme-preview-forest"></div>
-                                <div class="theme-name">Forest</div>
-                            </div>
-                            <div class="theme-option" data-theme="sunset">
-                                <div class="theme-preview theme-preview-sunset"></div>
-                                <div class="theme-name">Sunset</div>
-                            </div>
-                            <div class="theme-option" data-theme="purple">
-                                <div class="theme-preview theme-preview-purple"></div>
-                                <div class="theme-name">Purple</div>
-                            </div>
-                            <div class="theme-option" data-theme="mint">
-                                <div class="theme-preview theme-preview-mint"></div>
-                                <div class="theme-name">Mint</div>
-                            </div>
-                            <div class="theme-option" data-theme="rose">
-                                <div class="theme-preview theme-preview-rose"></div>
-                                <div class="theme-name">Rose</div>
-                            </div>
-                            <div class="theme-option" data-theme="amber">
-                                <div class="theme-preview theme-preview-amber"></div>
-                                <div class="theme-name">Amber</div>
-                            </div>
+                <div class="section">
+                    <h2>Theme</h2>
+                    <div class="theme-selector">
+                        <div class="theme-option" data-theme="default">
+                            <div class="theme-preview theme-preview-default"></div>
+                            <div class="theme-name">Default</div>
+                        </div>
+                        <div class="theme-option" data-theme="ocean">
+                            <div class="theme-preview theme-preview-ocean"></div>
+                            <div class="theme-name">Ocean</div>
+                        </div>
+                        <div class="theme-option" data-theme="forest">
+                            <div class="theme-preview theme-preview-forest"></div>
+                            <div class="theme-name">Forest</div>
+                        </div>
+                        <div class="theme-option" data-theme="sunset">
+                            <div class="theme-preview theme-preview-sunset"></div>
+                            <div class="theme-name">Sunset</div>
+                        </div>
+                        <div class="theme-option" data-theme="purple">
+                            <div class="theme-preview theme-preview-purple"></div>
+                            <div class="theme-name">Purple</div>
+                        </div>
+                        <div class="theme-option" data-theme="mint">
+                            <div class="theme-preview theme-preview-mint"></div>
+                            <div class="theme-name">Mint</div>
+                        </div>
+                        <div class="theme-option" data-theme="rose">
+                            <div class="theme-preview theme-preview-rose"></div>
+                            <div class="theme-name">Rose</div>
+                        </div>
+                        <div class="theme-option" data-theme="amber">
+                            <div class="theme-preview theme-preview-amber"></div>
+                            <div class="theme-name">Amber</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- AI Status Section -->
-                <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h2>AI Status</h2>
+                <div class="section">
+                    <h2>AI Status</h2>
+                    <div class="ai-status-list">
+                        <div class="ai-status-row">
+                            <span class="ai-status-label">Language Model</span>
+                            <span class="ai-status-value" id="aiLanguageModel">...</span>
+                        </div>
+                        <div class="ai-status-row">
+                            <span class="ai-status-label">Summarizer</span>
+                            <span class="ai-status-value" id="aiSummarizer">...</span>
+                        </div>
+                        <div class="ai-status-row">
+                            <span class="ai-status-label">Writer</span>
+                            <span class="ai-status-value" id="aiWriter">...</span>
+                        </div>
                     </div>
-                    <div class="settings-section-content">
-                        <div class="status-grid">
-                            <div class="status-item">
-                                <span class="label">Language Model:</span>
-                                <span class="value" id="aiLanguageModel">...</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="label">Summarizer:</span>
-                                <span class="value" id="aiSummarizer">...</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="label">Writer:</span>
-                                <span class="value" id="aiWriter">...</span>
-                            </div>
-                        </div>
-                        <div id="aiSetupPrompt"
-                            style="display: none; margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 8px; font-size: 12px;">
-                            <p style="margin: 0 0 8px 0;"><strong>⚠️ AI Not Available</strong></p>
-                            <p style="margin: 0 0 8px 0;">Enable Gemini Nano in Chrome:</p>
-                            <ol style="margin: 0 0 8px 0; padding-left: 20px;">
-                                <li>Visit <code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enable</li>
-                                <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> → Enable
-                                    BypassPerfRequirement</li>
-                                <li>Restart Chrome</li>
-                            </ol>
-                            <p style="margin: 0; font-size: 11px; color: #666;">See AI_SETUP_GUIDE.md for details.</p>
-                        </div>
+                    <div id="aiSetupPrompt" class="ai-setup-prompt" style="display: none;">
+                        <div class="ai-setup-header">⚠️ AI Not Available</div>
+                        <p>Enable Gemini Nano in Chrome:</p>
+                        <ol>
+                            <li>Visit <code>chrome://flags/#prompt-api-for-gemini-nano</code> → Enable</li>
+                            <li>Visit <code>chrome://flags/#optimization-guide-on-device-model</code> → Enable
+                                BypassPerfRequirement</li>
+                            <li>Restart Chrome</li>
+                        </ol>
+                        <p class="ai-setup-footer">See AI_SETUP_GUIDE.md for details.</p>
                     </div>
                 </div>
 
-                <!-- Actions -->
+                <!-- Save Button -->
                 <div class="settings-actions-container">
                     <button class="btn btn-primary btn-full" id="saveSettingsBtn">Save Settings</button>
                 </div>

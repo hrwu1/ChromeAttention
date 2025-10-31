@@ -807,7 +807,7 @@ async function loadTheme() {
 
 function setTheme(theme) {
     applyTheme(theme);
-    
+
     // Save to storage
     chrome.storage.local.set({ theme: theme }).catch(error => {
         console.error('Failed to save theme:', error);
@@ -898,7 +898,7 @@ function showReview(session) {
         let duration = 0;
         let totalTime = '0m';
         let netFocus = '0m';
-        
+
         if (session.startTime && session.endTime && session.endTime > session.startTime) {
             duration = Math.floor((session.endTime - session.startTime) / 60000);
             totalTime = formatDwellTime(session.endTime - session.startTime);
@@ -915,7 +915,7 @@ function showReview(session) {
         const focusEfficiency = pageAnalysis ? `${pageAnalysis.focusPercentage}%` : '100%';
         const distractionCount = session.distractions || 0;
         const pagesCount = session.pagesVisited?.length || 0;
-        
+
         // Calculate net focus time
         if (pageAnalysis && pageAnalysis.totalFocusTime) {
             netFocus = formatDwellTime(pageAnalysis.totalFocusTime);
@@ -924,7 +924,7 @@ function showReview(session) {
         }
 
         // Get goal title
-        const goalTitle = session.goals && session.goals.length > 0 
+        const goalTitle = session.goals && session.goals.length > 0
             ? session.goals.map(g => g.topic || g.text).join(', ')
             : 'Focus Session';
 
