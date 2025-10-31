@@ -5,6 +5,7 @@
     --bg-color: #faf9f8;
     --item-bg-color: #ffffff;
     --border-color: #e1dfdd;
+    --hero-bg-color: #e3f2fd;
 
     /* Text Colors */
     --text-color-primary: #323130;
@@ -1251,8 +1252,8 @@ body {
 }
 
 .review-header {
-    background: var(--accent-color);
-    color: white;
+    background: var(--hero-bg-color);
+    color: var(--text-color-primary);
     padding: 24px;
     border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
 }
@@ -1267,7 +1268,7 @@ body {
 .review-header-title h2 {
     font-size: 20px;
     font-weight: 600;
-    color: white;
+    color: var(--text-color-primary);
     margin: 0;
 }
 
@@ -1276,8 +1277,8 @@ body {
     height: 32px;
     padding: 0;
     border: none;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-color-secondary);
     font-size: 18px;
     cursor: pointer;
     border-radius: var(--border-radius-main);
@@ -1288,12 +1289,13 @@ body {
 }
 
 .review-close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--text-color-primary);
 }
 
 .review-goal-title {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color-secondary);
     margin-bottom: 16px;
 }
 
@@ -1304,16 +1306,16 @@ body {
 }
 
 .review-hero-stat {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.6);
     padding: 12px;
     border-radius: var(--border-radius-main);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-color);
     text-align: center;
 }
 
 .review-hero-stat-label {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-color-secondary);
     margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1323,7 +1325,7 @@ body {
 .review-hero-stat-value {
     font-size: 20px;
     font-weight: 600;
-    color: white;
+    color: var(--accent-color);
 }
 
 .review-content {
@@ -1637,12 +1639,12 @@ body {
 
 /* Analytics Styles */
 .analytics-hero-card {
-    background: var(--accent-color);
-    color: white;
+    background: var(--hero-bg-color);
+    color: var(--text-color-primary);
     margin: 16px;
     padding: 20px;
     border-radius: var(--border-radius-large);
-    border: 2px solid var(--border-dark);
+    border: 1px solid var(--accent-color);
     position: relative;
     overflow: hidden;
 }
@@ -1657,7 +1659,7 @@ body {
 
 .hero-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-color-secondary);
     margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1667,7 +1669,7 @@ body {
 .hero-goal {
     font-size: 18px;
     font-weight: 600;
-    color: white;
+    color: var(--text-color-primary);
 }
 
 .hero-stats {
@@ -1678,16 +1680,16 @@ body {
 }
 
 .hero-stat {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.6);
     padding: 14px;
     border-radius: var(--border-radius-main);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-color);
     backdrop-filter: blur(10px);
 }
 
 .hero-stat-label {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-color-secondary);
     margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1697,7 +1699,7 @@ body {
 .hero-stat-value {
     font-size: 24px;
     font-weight: 600;
-    color: white;
+    color: var(--accent-color);
 }
 
 .hero-footer {
@@ -1705,8 +1707,8 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 12px;
 }
 
@@ -1723,7 +1725,7 @@ body {
 
 .hero-distraction-label {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-color-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-weight: 600;
@@ -1731,14 +1733,14 @@ body {
 
 .hero-distraction-detail {
     font-size: 12px;
-    color: white;
+    color: var(--text-color-primary);
     font-weight: 500;
 }
 
 .hero-interruptions {
     font-size: 14px;
     font-weight: 500;
-    color: white;
+    color: var(--text-color-primary);
 }
 
 .hero-efficiency {
@@ -1749,7 +1751,7 @@ body {
 
 .hero-efficiency-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-color-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-weight: 600;
@@ -1758,7 +1760,7 @@ body {
 .hero-efficiency-value {
     font-size: 24px;
     font-weight: 600;
-    color: white;
+    color: var(--accent-color);
 }
 
 .analytics-section-title {
@@ -1966,99 +1968,100 @@ body {
 }
 
 .theme-preview-default {
-    background: #faf9f8;
+    background: #ffffff;
+    border: 2px solid #0078d4;
 }
 
 .theme-preview-default::before {
-    background: #0078d4;
+    display: none;
 }
 
 .theme-preview-default::after {
-    background: #0078d4;
+    display: none;
 }
 
 .theme-preview-ocean {
-    background: #e8f4f8;
+    background: #0077b6;
 }
 
 .theme-preview-ocean::before {
-    background: #0077b6;
+    display: none;
 }
 
 .theme-preview-ocean::after {
-    background: #0077b6;
+    display: none;
 }
 
 .theme-preview-forest {
-    background: #f0f4f0;
+    background: #2d6a4f;
 }
 
 .theme-preview-forest::before {
-    background: #2d6a4f;
+    display: none;
 }
 
 .theme-preview-forest::after {
-    background: #2d6a4f;
+    display: none;
 }
 
 .theme-preview-sunset {
-    background: #fff5f0;
+    background: #d64545;
 }
 
 .theme-preview-sunset::before {
-    background: #d64545;
+    display: none;
 }
 
 .theme-preview-sunset::after {
-    background: #d64545;
+    display: none;
 }
 
 .theme-preview-purple {
-    background: #f5f0ff;
+    background: #7c3aed;
 }
 
 .theme-preview-purple::before {
-    background: #7c3aed;
+    display: none;
 }
 
 .theme-preview-purple::after {
-    background: #7c3aed;
+    display: none;
 }
 
 .theme-preview-mint {
-    background: #f0fdf4;
+    background: #10b981;
 }
 
 .theme-preview-mint::before {
-    background: #10b981;
+    display: none;
 }
 
 .theme-preview-mint::after {
-    background: #10b981;
+    display: none;
 }
 
 .theme-preview-rose {
-    background: #fff1f2;
+    background: #e11d48;
 }
 
 .theme-preview-rose::before {
-    background: #e11d48;
+    display: none;
 }
 
 .theme-preview-rose::after {
-    background: #e11d48;
+    display: none;
 }
 
 .theme-preview-amber {
-    background: #fffbeb;
+    background: #f59e0b;
 }
 
 .theme-preview-amber::before {
-    background: #f59e0b;
+    display: none;
 }
 
 .theme-preview-amber::after {
-    background: #f59e0b;
+    display: none;
 }
 
 .theme-name {
@@ -2094,106 +2097,113 @@ body {
 
 /* Theme-specific color overrides */
 body[data-theme="ocean"] {
-    --bg-color: #e8f4f8;
+    --bg-color: #fafafa;
     --item-bg-color: #ffffff;
-    --border-color: #b8d8e8;
-    --text-color-primary: #023e58;
-    --text-color-secondary: #0a5f7f;
-    --text-color-tertiary: #4a8fa8;
+    --border-color: #e1dfdd;
+    --hero-bg-color: #e0f2f7;
+    --text-color-primary: #323130;
+    --text-color-secondary: #605e5c;
+    --text-color-tertiary: #8a8886;
     --accent-color: #0077b6;
     --accent-color-hover: #005f8f;
     --accent-color-light: rgba(0, 119, 182, 0.1);
-    --border-dark: #90c4d8;
+    --border-dark: #d1d1d6;
     --item-hover-gradient: linear-gradient(90deg, rgba(0, 119, 182, 0.06) 0%, rgba(0, 119, 182, 0) 100%);
     --item-active-gradient: linear-gradient(90deg, rgba(0, 119, 182, 0.12) 0%, rgba(0, 119, 182, 0) 100%);
 }
 
 body[data-theme="forest"] {
-    --bg-color: #f0f4f0;
+    --bg-color: #fafafa;
     --item-bg-color: #ffffff;
-    --border-color: #c8d8c8;
-    --text-color-primary: #1b4332;
-    --text-color-secondary: #2d6a4f;
-    --text-color-tertiary: #52b788;
+    --border-color: #e1dfdd;
+    --hero-bg-color: #e8f5e9;
+    --text-color-primary: #323130;
+    --text-color-secondary: #605e5c;
+    --text-color-tertiary: #8a8886;
     --accent-color: #2d6a4f;
     --accent-color-hover: #1b4332;
     --accent-color-light: rgba(45, 106, 79, 0.1);
-    --border-dark: #a8c8a8;
+    --border-dark: #d1d1d6;
     --item-hover-gradient: linear-gradient(90deg, rgba(45, 106, 79, 0.06) 0%, rgba(45, 106, 79, 0) 100%);
     --item-active-gradient: linear-gradient(90deg, rgba(45, 106, 79, 0.12) 0%, rgba(45, 106, 79, 0) 100%);
 }
 
 body[data-theme="sunset"] {
-    --bg-color: #fff5f0;
+    --bg-color: #fafafa;
     --item-bg-color: #ffffff;
-    --border-color: #f8d8d0;
-    --text-color-primary: #5a1a1a;
-    --text-color-secondary: #8a3a3a;
-    --text-color-tertiary: #b85a5a;
+    --border-color: #e1dfdd;
+    --hero-bg-color: #ffebee;
+    --text-color-primary: #323130;
+    --text-color-secondary: #605e5c;
+    --text-color-tertiary: #8a8886;
     --accent-color: #d64545;
     --accent-color-hover: #b83838;
     --accent-color-light: rgba(214, 69, 69, 0.1);
-    --border-dark: #e8b8b0;
+    --border-dark: #d1d1d6;
     --item-hover-gradient: linear-gradient(90deg, rgba(214, 69, 69, 0.06) 0%, rgba(214, 69, 69, 0) 100%);
     --item-active-gradient: linear-gradient(90deg, rgba(214, 69, 69, 0.12) 0%, rgba(214, 69, 69, 0) 100%);
 }
 
 body[data-theme="purple"] {
-    --bg-color: #f5f0ff;
+    --bg-color: #fafafa;
     --item-bg-color: #ffffff;
-    --border-color: #e0d4f7;
-    --text-color-primary: #3b1a5a;
-    --text-color-secondary: #5b2a7a;
-    --text-color-tertiary: #8b5aa8;
+    --border-color: #e1dfdd;
+    --hero-bg-color: #f3e5f5;
+    --text-color-primary: #323130;
+    --text-color-secondary: #605e5c;
+    --text-color-tertiary: #8a8886;
     --accent-color: #7c3aed;
     --accent-color-hover: #6d28d9;
     --accent-color-light: rgba(124, 58, 237, 0.1);
-    --border-dark: #d0b8e8;
+    --border-dark: #d1d1d6;
     --item-hover-gradient: linear-gradient(90deg, rgba(124, 58, 237, 0.06) 0%, rgba(124, 58, 237, 0) 100%);
     --item-active-gradient: linear-gradient(90deg, rgba(124, 58, 237, 0.12) 0%, rgba(124, 58, 237, 0) 100%);
 }
 
 body[data-theme="mint"] {
-    --bg-color: #f0fdf4;
+    --bg-color: #fafafa;
     --item-bg-color: #ffffff;
-    --border-color: #bbf7d0;
-    --text-color-primary: #14532d;
-    --text-color-secondary: #166534;
-    --text-color-tertiary: #22c55e;
+    --border-color: #e1dfdd;
+    --hero-bg-color: #d1fae5;
+    --text-color-primary: #323130;
+    --text-color-secondary: #605e5c;
+    --text-color-tertiary: #8a8886;
     --accent-color: #10b981;
     --accent-color-hover: #059669;
     --accent-color-light: rgba(16, 185, 129, 0.1);
-    --border-dark: #86efac;
+    --border-dark: #d1d1d6;
     --item-hover-gradient: linear-gradient(90deg, rgba(16, 185, 129, 0.06) 0%, rgba(16, 185, 129, 0) 100%);
     --item-active-gradient: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0) 100%);
 }
 
 body[data-theme="rose"] {
-    --bg-color: #fff1f2;
+    --bg-color: #fafafa;
     --item-bg-color: #ffffff;
-    --border-color: #fecdd3;
-    --text-color-primary: #4c0519;
-    --text-color-secondary: #881337;
-    --text-color-tertiary: #be123c;
+    --border-color: #e1dfdd;
+    --hero-bg-color: #ffe4e6;
+    --text-color-primary: #323130;
+    --text-color-secondary: #605e5c;
+    --text-color-tertiary: #8a8886;
     --accent-color: #e11d48;
     --accent-color-hover: #be123c;
     --accent-color-light: rgba(225, 29, 72, 0.1);
-    --border-dark: #fda4af;
+    --border-dark: #d1d1d6;
     --item-hover-gradient: linear-gradient(90deg, rgba(225, 29, 72, 0.06) 0%, rgba(225, 29, 72, 0) 100%);
     --item-active-gradient: linear-gradient(90deg, rgba(225, 29, 72, 0.12) 0%, rgba(225, 29, 72, 0) 100%);
 }
 
 body[data-theme="amber"] {
-    --bg-color: #fffbeb;
+    --bg-color: #fafafa;
     --item-bg-color: #ffffff;
-    --border-color: #fde68a;
-    --text-color-primary: #451a03;
-    --text-color-secondary: #78350f;
-    --text-color-tertiary: #b45309;
+    --border-color: #e1dfdd;
+    --hero-bg-color: #fef3c7;
+    --text-color-primary: #323130;
+    --text-color-secondary: #605e5c;
+    --text-color-tertiary: #8a8886;
     --accent-color: #f59e0b;
     --accent-color-hover: #d97706;
     --accent-color-light: rgba(245, 158, 11, 0.1);
-    --border-dark: #fcd34d;
+    --border-dark: #d1d1d6;
     --item-hover-gradient: linear-gradient(90deg, rgba(245, 158, 11, 0.06) 0%, rgba(245, 158, 11, 0) 100%);
     --item-active-gradient: linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0) 100%);
 }
