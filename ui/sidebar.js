@@ -324,6 +324,14 @@ function setupCollapsibleSections() {
             aiStatusSection.classList.add('collapsed');
         }
     }
+
+    // Theme section collapsible
+    const themeHeader = document.getElementById('themeHeader');
+    if (themeHeader) {
+        themeHeader.addEventListener('click', () => {
+            themeHeader.classList.toggle('collapsed');
+        });
+    }
 }
 
 // ============================================================================
@@ -361,6 +369,9 @@ function setupEventListeners() {
     document.getElementById('blacklistInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleAddBlacklist();
     });
+
+    // Theme selection
+    setupThemeSelector();
 
     // History
     document.getElementById('closeHistoryBtn').addEventListener('click', hideHistory);
@@ -761,6 +772,59 @@ async function handleRemoveDomain(domain, listType) {
 
 // Make handleRemoveDomain globally accessible for onclick handlers
 window.handleRemoveDomain = handleRemoveDomain;
+
+// ============================================================================
+// THEME MANAGEMENT
+// ============================================================================
+
+function setupThemeSelector() {
+    // Load saved theme
+    loadTheme();
+
+    // Add click handlers to theme options
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            const theme = option.dataset.theme;
+            setTheme(theme);
+        });
+    });
+}
+
+async function loadTheme() {
+    try {
+        const result = await chrome.storage.local.get(['theme']);
+        const theme = result.theme || 'default';
+        applyTheme(theme);
+    } catch (error) {
+        console.error('Failed to load theme:', error);
+        applyTheme('default');
+    }
+}
+
+function setTheme(theme) {
+    applyTheme(theme);
+    
+    // Save to storage
+    chrome.storage.local.set({ theme: theme }).catch(error => {
+        console.error('Failed to save theme:', error);
+    });
+}
+
+function applyTheme(theme) {
+    // Apply theme to body
+    document.body.setAttribute('data-theme', theme);
+
+    // Update active state on theme options
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+        if (option.dataset.theme === theme) {
+            option.classList.add('active');
+        } else {
+            option.classList.remove('active');
+        }
+    });
+}
 
 // ============================================================================
 // HISTORY
