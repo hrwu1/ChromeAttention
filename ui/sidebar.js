@@ -1030,7 +1030,7 @@ function showReview(session) {
                     `;
                 });
             } else {
-                html += '<p class="no-data">No distractions! Great job! 🎉</p>';
+                html += '<p class="no-data">No distractions! Great job!</p>';
             }
 
             html += `</div>`;

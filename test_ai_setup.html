@@ -352,7 +352,7 @@
       // Summary
       const allPassed = results.languageModel && results.summarizer;
       if (allPassed) {
-        addResult('<strong>🎉 All essential APIs are working!</strong><br>Your Chrome AI setup is complete. The extension should work properly now.', 'success');
+        addResult('<strong>All essential APIs are working!</strong><br>Your Chrome AI setup is complete. The extension should work properly now.', 'success');
       } else if (results.languageModel || results.summarizer) {
         addResult('<strong>⚠️ Partial setup</strong><br>Some APIs are available. The extension will work with limited functionality.', 'warning');
       } else {

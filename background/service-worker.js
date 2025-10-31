@@ -823,7 +823,7 @@ async function handleMessage(message, sender) {
           type: 'basic',
           iconUrl: '../icons/icon128.png',
           title: 'Focus Assistant Test',
-          message: 'If you see this, notifications are working! 🎉',
+          message: 'If you see this, notifications are working!',
           priority: 2
         });
         Logger.info('[TEST] Notification created with ID:', testId);
