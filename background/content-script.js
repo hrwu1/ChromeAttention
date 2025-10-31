@@ -311,11 +311,12 @@ class PageAnalyzer {
       padding: 10px 14px;
       background: rgba(102, 126, 234, 0.95);
       color: white;
-      border-radius: 8px;
+      border-radius: 0;
+      border: 1px solid #333;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       font-size: 13px;
       font-weight: 500;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      box-shadow: none;
       z-index: 999999;
       display: flex;
       align-items: center;
@@ -328,8 +329,8 @@ class PageAnalyzer {
     spinner.style.cssText = `
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
+      border: 2px solid rgba(51, 51, 51, 0.3);
+      border-top-color: #333;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     `;

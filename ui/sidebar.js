@@ -1398,9 +1398,10 @@ function showLoading(message) {
     content.style.cssText = `
         background: white;
         padding: 32px 40px;
-        border-radius: 12px;
+        border-radius: 0;
+        border: 2px solid #333;
         text-align: center;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        box-shadow: none;
         animation: slideIn 0.3s ease-out;
     `;
 
@@ -1409,8 +1410,8 @@ function showLoading(message) {
     spinner.style.cssText = `
         width: 48px;
         height: 48px;
-        border: 4px solid #e0e0e0;
-        border-top-color: #667eea;
+        border: 3px solid #e0e0e0;
+        border-top-color: #333;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
         margin: 0 auto 20px;
