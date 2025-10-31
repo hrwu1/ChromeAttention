@@ -386,6 +386,9 @@ function setupEventListeners() {
     document.getElementById('goalModal').addEventListener('click', (e) => {
         if (e.target.id === 'goalModal') hideGoalModal();
     });
+    document.getElementById('reviewSection').addEventListener('click', (e) => {
+        if (e.target.id === 'reviewSection') hideReview();
+    });
 }
 
 // ============================================================================
@@ -885,15 +888,20 @@ function hideHistory() {
 // ============================================================================
 
 function showReview(session) {
-    document.getElementById('reviewSection').style.display = 'block';
+    document.getElementById('reviewSection').style.display = 'flex';
 
+    const reviewHeader = document.getElementById('reviewHeader');
     const reviewContent = document.getElementById('reviewContent');
 
     if (session.review) {
         // Safely calculate duration
         let duration = 0;
+        let totalTime = '0m';
+        let netFocus = '0m';
+        
         if (session.startTime && session.endTime && session.endTime > session.startTime) {
             duration = Math.floor((session.endTime - session.startTime) / 60000);
+            totalTime = formatDwellTime(session.endTime - session.startTime);
         } else {
             console.warn('Invalid session times in review', {
                 startTime: session.startTime,
@@ -904,30 +912,82 @@ function showReview(session) {
         }
 
         const pageAnalysis = session.review.pageAnalysis;
+        const focusEfficiency = pageAnalysis ? `${pageAnalysis.focusPercentage}%` : '100%';
+        const distractionCount = session.distractions || 0;
+        const pagesCount = session.pagesVisited?.length || 0;
+        
+        // Calculate net focus time
+        if (pageAnalysis && pageAnalysis.totalFocusTime) {
+            netFocus = formatDwellTime(pageAnalysis.totalFocusTime);
+        } else {
+            netFocus = totalTime;
+        }
+
+        // Get goal title
+        const goalTitle = session.goals && session.goals.length > 0 
+            ? session.goals.map(g => g.topic || g.text).join(', ')
+            : 'Focus Session';
+
+        // Render header
+        reviewHeader.innerHTML = `
+            <div class="review-header-title">
+                <h2>Session Complete</h2>
+                <button class="review-close-btn" onclick="hideReview()">✕</button>
+            </div>
+            <div class="review-goal-title">${goalTitle}</div>
+            <div class="review-hero-stats">
+                <div class="review-hero-stat">
+                    <div class="review-hero-stat-label">Total Time</div>
+                    <div class="review-hero-stat-value">${totalTime}</div>
+                </div>
+                <div class="review-hero-stat">
+                    <div class="review-hero-stat-label">Net Focus</div>
+                    <div class="review-hero-stat-value">${netFocus}</div>
+                </div>
+                <div class="review-hero-stat">
+                    <div class="review-hero-stat-label">Pages</div>
+                    <div class="review-hero-stat-value">${pagesCount}</div>
+                </div>
+            </div>
+        `;
 
         let html = '';
 
         // Show AI summary if available
         if (session.review.summary) {
-            html += `<div class="review-text">${session.review.summary.replace(/\n/g, '<br>')}</div>`;
+            html += `
+                <h3 class="review-section-title">Summary</h3>
+                <div class="review-summary-card">
+                    <div class="review-text">${session.review.summary.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
         }
 
+        // Stats grid
         html += `
-      <div class="review-stats">
-        <p><strong>Duration:</strong> ${duration} minutes</p>
-        <p><strong>Pages Visited:</strong> ${session.pagesVisited?.length || 0}</p>
-        <p><strong>Distractions:</strong> ${session.distractions || 0}</p>
-    `;
+            <h3 class="review-section-title">Performance</h3>
+            <div class="review-efficiency-card">
+                <span class="review-efficiency-label">Focus Efficiency</span>
+                <span class="review-efficiency-value">${focusEfficiency}</span>
+            </div>
+            <div class="review-stats-grid">
+                <div class="review-stat-card">
+                    <div class="review-stat-label">Distractions</div>
+                    <div class="review-stat-value">${distractionCount}</div>
+                </div>
+                <div class="review-stat-card">
+                    <div class="review-stat-label">Duration</div>
+                    <div class="review-stat-value">${duration}m</div>
+                </div>
+            </div>
+        `;
 
         // Add page analysis if available
         if (pageAnalysis) {
             html += `
-        <p><strong>Focus Score:</strong> ${pageAnalysis.focusPercentage}%</p>
-      </div>
-      
-      <h4>⭐ Top Relevant Pages</h4>
-      <div class="page-list">
-      `;
+                <h3 class="review-section-title">Top Relevant Pages</h3>
+                <div class="page-list">
+            `;
 
             if (pageAnalysis.topNormalPages.length > 0) {
                 pageAnalysis.topNormalPages.slice(0, 5).forEach(page => {
@@ -935,25 +995,24 @@ function showReview(session) {
                     const displayUrl = page.baseUrl || page.url;
                     const visitInfo = page.visitCount > 1 ? ` (${page.visitCount} visits)` : '';
                     html += `
-            <div class="page-item">
-              <div class="page-info">
-                <div class="page-title" title="${displayUrl}">${truncateText(page.title, 50)}</div>
-                ${visitInfo ? `<div class="page-visits">${visitInfo}</div>` : ''}
-              </div>
-              <div class="page-time">${timeSpent}</div>
-            </div>
-          `;
+                        <div class="page-item">
+                            <div class="page-info">
+                                <div class="page-title" title="${displayUrl}">${truncateText(page.title, 50)}</div>
+                                ${visitInfo ? `<div class="page-visits">${visitInfo}</div>` : ''}
+                            </div>
+                            <div class="page-time">${timeSpent}</div>
+                        </div>
+                    `;
                 });
             } else {
                 html += '<p class="no-data">No relevant pages tracked</p>';
             }
 
             html += `
-        </div>
-      
-      <h4>⚠️ Top Distraction Pages</h4>
-      <div class="page-list">
-      `;
+                </div>
+                <h3 class="review-section-title">Distraction Pages</h3>
+                <div class="page-list">
+            `;
 
             if (pageAnalysis.topDistractionPages.length > 0) {
                 pageAnalysis.topDistractionPages.slice(0, 5).forEach(page => {
@@ -961,33 +1020,32 @@ function showReview(session) {
                     const displayUrl = page.baseUrl || page.url;
                     const visitInfo = page.visitCount > 1 ? ` (${page.visitCount} visits)` : '';
                     html += `
-            <div class="page-item distraction">
-              <div class="page-info">
-                <div class="page-title" title="${displayUrl}">${truncateText(page.title, 50)}</div>
-                ${visitInfo ? `<div class="page-visits">${visitInfo}</div>` : ''}
-              </div>
-              <div class="page-time">${timeSpent}</div>
-            </div>
-          `;
+                        <div class="page-item distraction">
+                            <div class="page-info">
+                                <div class="page-title" title="${displayUrl}">${truncateText(page.title, 50)}</div>
+                                ${visitInfo ? `<div class="page-visits">${visitInfo}</div>` : ''}
+                            </div>
+                            <div class="page-time">${timeSpent}</div>
+                        </div>
+                    `;
                 });
             } else {
                 html += '<p class="no-data">No distractions! Great job! 🎉</p>';
             }
 
-            html += `
-        </div>
-      `;
-        } else {
-            html += '</div>';
+            html += `</div>`;
         }
 
         reviewContent.innerHTML = html;
     } else {
-        reviewContent.innerHTML = '<p>Session completed successfully!</p>';
+        reviewHeader.innerHTML = `
+            <div class="review-header-title">
+                <h2>Session Complete</h2>
+                <button class="review-close-btn" onclick="hideReview()">✕</button>
+            </div>
+        `;
+        reviewContent.innerHTML = '<div class="review-summary-card"><p>Session completed successfully!</p></div>';
     }
-
-    // Scroll to review section
-    document.getElementById('reviewSection').scrollIntoView({ behavior: 'smooth' });
 }
 
 function formatDwellTime(ms) {
@@ -1013,6 +1071,9 @@ function truncateText(text, maxLength) {
 function hideReview() {
     document.getElementById('reviewSection').style.display = 'none';
 }
+
+// Make hideReview globally accessible for onclick handlers
+window.hideReview = hideReview;
 
 // ============================================================================
 // ANALYTICS
