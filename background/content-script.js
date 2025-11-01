@@ -536,6 +536,7 @@ class PageAnalyzer {
     const overlay = document.createElement('div');
     overlay.id = 'focus-assistant-modal';
     overlay.style.cssText = `
+      all: initial;
       position: fixed;
       top: 0;
       left: 0;
@@ -548,11 +549,13 @@ class PageAnalyzer {
       align-items: center;
       justify-content: center;
       animation: fadeIn 0.2s ease-out;
+      box-sizing: border-box;
     `;
 
     // Create modal content
     const modal = document.createElement('div');
     modal.style.cssText = `
+      all: initial;
       background: ${colors.itemBg};
       border-radius: 6px;
       border: 2px solid ${colors.borderDark};
@@ -561,11 +564,28 @@ class PageAnalyzer {
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       animation: slideIn 0.3s ease-out;
-      overflow: hidden;
+      overflow: visible;
+      box-sizing: border-box;
+      display: block;
     `;
 
     modal.innerHTML = `
       <style>
+        #focus-assistant-modal * {
+          all: revert;
+          box-sizing: border-box;
+        }
+        #focus-assistant-modal button {
+          all: revert;
+          box-sizing: border-box;
+          text-transform: none;
+          letter-spacing: normal;
+          line-height: normal;
+          min-height: auto;
+          min-width: auto;
+          max-height: none;
+          max-width: none;
+        }
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -581,6 +601,7 @@ class PageAnalyzer {
         background: ${colors.heroBg};
         padding: 24px;
         border-bottom: 1px solid ${colors.border};
+        box-sizing: border-box;
       ">
         <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -668,7 +689,7 @@ class PageAnalyzer {
         </div>
         
         <!-- Action Buttons -->
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; box-sizing: border-box;">
           <button id="focus-assistant-back-btn" style="
             flex: 1;
             padding: 12px 20px;
@@ -680,7 +701,19 @@ class PageAnalyzer {
             font-weight: 500;
             cursor: pointer;
             transition: all 0.15s ease;
-            font-family: inherit;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            box-sizing: border-box;
+            line-height: 1.4;
+            text-align: center;
+            text-transform: none;
+            letter-spacing: normal;
+            min-height: auto;
+            max-height: none;
+            height: auto;
+            display: inline-block;
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: visible;
           ">Back to Goal</button>
           <button id="focus-assistant-relevant-btn" style="
             flex: 1;
@@ -693,7 +726,19 @@ class PageAnalyzer {
             font-weight: 500;
             cursor: pointer;
             transition: all 0.15s ease;
-            font-family: inherit;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            box-sizing: border-box;
+            line-height: 1.4;
+            text-align: center;
+            text-transform: none;
+            letter-spacing: normal;
+            min-height: auto;
+            max-height: none;
+            height: auto;
+            display: inline-block;
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: visible;
           ">It's Relevant</button>
         </div>
         
@@ -706,7 +751,17 @@ class PageAnalyzer {
           font-size: 13px;
           cursor: pointer;
           transition: color 0.2s;
-          font-family: inherit;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          box-sizing: border-box;
+          line-height: 1.4;
+          text-align: center;
+          text-transform: none;
+          letter-spacing: normal;
+          min-height: auto;
+          max-height: none;
+          height: auto;
+          display: block;
+          overflow: visible;
         ">Dismiss</button>
       </div>
     `;
