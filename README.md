@@ -1,4 +1,4 @@
-# Chrome Focus Assistant
+# Flow AI
 
 Attention is All You Need!
 
@@ -16,7 +16,7 @@ An intelligent focus assistant that leverages Google Chrome's built-in AI (Gemin
 ## Project Structure
 
 ```
-ChromeAttention/
+FlowAI/
 ├── manifest.json                 # Manifest V3 configuration
 ├── README.md                     # This file
 ├── rules.json                    # DeclarativeNetRequest rules
@@ -112,7 +112,7 @@ User provides feedback → Learning Engine
    - Clone this repository
    - Open `chrome://extensions/`
    - Enable "Developer mode"
-   - Click "Load unpacked" and select the `ChromeAttention` directory
+   - Click "Load unpacked" and select the extension directory
 
 4. **Verify AI is Working**
    - Open DevTools (F12) and run: `await LanguageModel.availability()`
