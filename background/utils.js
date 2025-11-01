@@ -221,11 +221,19 @@ export function sleep(ms) {
  * Extract base URL from full URL (removes query parameters and fragments)
  * This helps group similar pages together
  * Example: "https://example.com/page?id=1#section" -> "https://example.com/page"
+ * Exception: YouTube URLs preserve query params to distinguish videos
  */
 export function getBaseUrl(url) {
   try {
     const urlObj = new URL(url);
-    // Return protocol + hostname + pathname (no query or hash)
+    
+    // Special case: YouTube - preserve query params to distinguish videos
+    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+      // Keep query params but remove hash
+      return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}${urlObj.search}`;
+    }
+    
+    // Default: Return protocol + hostname + pathname (no query or hash)
     return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
   } catch (e) {
     Logger.warn('Failed to parse URL', url);
