@@ -553,7 +553,7 @@ class PageAnalyzer {
     const modal = document.createElement('div');
     modal.style.cssText = `
       background: ${colors.itemBg};
-      border-radius: 0px;
+      border-radius: 6px;
       border: 2px solid ${colors.borderDark};
       max-width: 520px;
       width: 90%;
@@ -612,7 +612,7 @@ class PageAnalyzer {
             color: ${colors.textSecondary};
             font-size: 18px;
             cursor: pointer;
-            border-radius: 0px;
+            border-radius: 4px;
             transition: all 0.2s;
             display: flex;
             align-items: center;
@@ -628,7 +628,7 @@ class PageAnalyzer {
         <div style="
           background: ${colors.bg};
           border: 1px solid ${colors.border};
-          border-radius: 0px;
+          border-radius: 4px;
           padding: 16px;
           margin-bottom: 16px;
         ">
@@ -653,7 +653,7 @@ class PageAnalyzer {
           background: ${colors.warningBg};
           border: 1px solid ${colors.warningBorder};
           border-left: 3px solid ${colors.warning};
-          border-radius: 0px;
+          border-radius: 4px;
           padding: 14px 16px;
           margin-bottom: 24px;
         ">
@@ -674,7 +674,7 @@ class PageAnalyzer {
             background: ${colors.accent};
             color: white;
             border: none;
-            border-radius: 0px;
+            border-radius: 4px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -687,7 +687,7 @@ class PageAnalyzer {
             background: ${colors.itemBg};
             color: ${colors.textPrimary};
             border: 1px solid ${colors.border};
-            border-radius: 0px;
+            border-radius: 4px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;

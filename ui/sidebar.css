@@ -29,8 +29,8 @@
     --item-active-gradient: linear-gradient(90deg, rgba(0, 120, 212, 0.1) 0%, rgba(0, 120, 212, 0) 100%);
 
     /* Borders & Shadows */
-    --border-radius-main: 0px;
-    --border-radius-large: 0px;
+    --border-radius-main: 4px;
+    --border-radius-large: 6px;
     --border-dark: #d1d1d6;
 }
 
