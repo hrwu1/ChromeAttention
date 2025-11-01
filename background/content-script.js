@@ -78,7 +78,8 @@ function shouldExcludeUrl(url) {
   const excludedProtocols = ['chrome:', 'chrome-extension:', 'edge:', 'about:', 'file:'];
   const excludedPatterns = [
     'chrome.google.com/webstore',
-    'microsoftedge.microsoft.com'
+    'microsoftedge.microsoft.com',
+    '/ui/blocked.html'  // Exclude our own blocked page
   ];
 
   return excludedProtocols.some(protocol => url.startsWith(protocol)) ||
@@ -808,9 +809,9 @@ class PageAnalyzer {
 // INITIALIZATION
 // ============================================================================
 
-// Check if we should exclude this page
-if (shouldExcludeUrl(window.location.href)) {
-  console.log('[Focus Assistant] Page excluded from monitoring');
+// Early exit check - don't run on extension pages or excluded URLs
+if (window.location.protocol === 'chrome-extension:' || shouldExcludeUrl(window.location.href)) {
+  console.log('[Focus Assistant] Page excluded from monitoring:', window.location.href);
 } else {
   // Initialize analyzer
   const analyzer = new PageAnalyzer();

@@ -183,7 +183,8 @@ export function shouldExcludeUrl(url) {
   const excludedProtocols = ['chrome:', 'chrome-extension:', 'edge:', 'about:', 'file:'];
   const excludedPatterns = [
     'chrome.google.com/webstore',
-    'microsoftedge.microsoft.com'
+    'microsoftedge.microsoft.com',
+    '/ui/blocked.html'  // Exclude our own blocked page
   ];
   
   return excludedProtocols.some(protocol => url.startsWith(protocol)) ||

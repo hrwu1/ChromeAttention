@@ -3,7 +3,6 @@
   "name": "Chrome Focus Assistant",
   "version": "0.1.0",
   "description": "Intelligent focus assistant leveraging Chrome's built-in AI to help you stay on task",
-  
   "permissions": [
     "storage",
     "tabs",
@@ -14,24 +13,25 @@
     "scripting",
     "sidePanel"
   ],
-  
   "host_permissions": [
     "<all_urls>"
   ],
-  
   "background": {
     "service_worker": "background/service-worker.js",
     "type": "module"
   },
-  
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["background/content-script.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "background/content-script.js"
+      ],
       "run_at": "document_idle"
     }
   ],
-  
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",
@@ -40,17 +40,14 @@
     },
     "default_title": "Focus Assistant"
   },
-  
   "side_panel": {
     "default_path": "ui/sidebar.html"
   },
-  
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  
   "declarative_net_request": {
     "rule_resources": [
       {
@@ -61,4 +58,3 @@
     ]
   }
 }
-
