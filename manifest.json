@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Focus Assistant",
+  "name": "Flow AI",
   "version": "0.1.0",
   "description": "Intelligent focus assistant leveraging Chrome's built-in AI to help you stay on task",
   "permissions": [
@@ -38,7 +38,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Focus Assistant"
+    "default_title": "Flow AI"
   },
   "side_panel": {
     "default_path": "ui/sidebar.html"
