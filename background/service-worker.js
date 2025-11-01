@@ -765,6 +765,21 @@ async function handleMessage(message, sender) {
       }
       return { success: false, error: 'No goal set' };
 
+    // Close current tab
+    case 'CLOSE_CURRENT_TAB':
+      try {
+        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (currentTab) {
+          await chrome.tabs.remove(currentTab.id);
+          Logger.info('Closed current tab');
+          return { success: true };
+        }
+        return { success: false, error: 'No active tab found' };
+      } catch (error) {
+        Logger.error('Failed to close tab', error);
+        return { success: false, error: error.message };
+      }
+
     // Open sidebar settings
     case 'OPEN_SIDEBAR_SETTINGS':
       try {

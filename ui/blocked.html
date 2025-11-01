@@ -13,87 +13,136 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #520000 0%, #1c0000 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #1c0000;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
+      color: #ffffff;
     }
 
     .container {
       text-align: center;
       max-width: 600px;
-      padding: 40px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
+      width: 90%;
+      padding: 0;
+    }
+
+    .header {
+      background: rgba(60, 10, 10, 0.9);
+      padding: 32px 40px;
+      border: 2px solid rgba(220, 38, 38, 0.5);
+      border-bottom: none;
       backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     }
 
     .icon {
-      font-size: 80px;
-      margin-bottom: 20px;
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.9;
     }
 
     h1 {
-      font-size: 32px;
+      font-size: 28px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.5;
+    }
+
+    .content {
+      background: rgba(60, 10, 10, 0.9);
+      padding: 24px 40px;
+      border: 2px solid rgba(220, 38, 38, 0.5);
+      border-top: 1px solid rgba(220, 38, 38, 0.3);
+      backdrop-filter: blur(10px);
+      display: none;
+    }
+
+    .content.visible {
+      display: block;
+    }
+
+    .info-card {
+      background: rgba(220, 38, 38, 0.15);
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      padding: 16px 20px;
       margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .info-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       font-weight: 600;
     }
 
-    p {
-      font-size: 18px;
-      margin-bottom: 32px;
-      opacity: 0.9;
-      line-height: 1.6;
+    .info-value {
+      font-size: 16px;
+      color: #ffffff;
+      font-weight: 500;
+      word-break: break-word;
     }
 
-    .goal {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 32px;
-      font-size: 16px;
+    .footer {
+      background: rgba(60, 10, 10, 0.9);
+      padding: 20px 40px;
+      border: 2px solid rgba(220, 38, 38, 0.5);
+      border-top: 1px solid rgba(220, 38, 38, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .footer-text {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.5;
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="icon">🚫</div>
-    <h1>Site Blocked</h1>
-    <p>This site is on your blacklist and has been blocked to help you stay focused.</p>
-
-    <div class="goal" id="blockedDomain">
-      <strong>Blocked Domain:</strong> <span id="domainName">Loading...</span>
+    <div class="header">
+      <div class="icon">🚫</div>
+      <h1>Site Blocked</h1>
+      <p class="subtitle">This site is on your blacklist and has been blocked to help you stay focused.</p>
     </div>
 
-    <div class="goal" id="goalDisplay" style="display: none;">
-      <strong>Your Goal:</strong> <span id="goalText">Loading...</span>
+    <div class="content" id="content">
+      <div class="info-card">
+        <div class="info-label">Your Goal</div>
+        <div class="info-value" id="goalText">Loading...</div>
+      </div>
     </div>
 
-    <p style="margin-top: 24px; font-size: 14px; opacity: 0.8;">
-      You can remove this domain from your blacklist in the extension settings.
-    </p>
+    <div class="footer">
+      <p class="footer-text">
+        You can remove this domain from your blacklist in the extension settings.
+      </p>
+    </div>
   </div>
 
   <script>
-    // Get URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const blockedUrl = urlParams.get('blocked');
-    const domain = urlParams.get('domain');
-
-    // Display blocked domain (just the domain name)
-    if (domain) {
-      document.getElementById('domainName').textContent = domain;
-    }
-
     // Load and display current goal if there is one
     chrome.runtime.sendMessage({ type: 'GET_CURRENT_GOAL' }, (response) => {
       if (response && response.success && response.data) {
-        document.getElementById('goalDisplay').style.display = 'block';
+        const content = document.getElementById('content');
+        content.classList.add('visible');
         document.getElementById('goalText').textContent = response.data.text;
       }
     });
