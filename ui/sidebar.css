@@ -861,6 +861,7 @@ body {
 .overlay-content {
     background: white;
     padding: 24px;
+    padding-bottom: 32px;
     border-radius: 0;
     width: 100%;
     max-width: 500px;
@@ -1596,6 +1597,7 @@ body {
     display: flex;
     gap: 10px;
     margin-top: 20px;
+    margin-bottom: 4px;
 }
 
 /* Info Icon Tooltips */
