@@ -350,7 +350,7 @@ class PageAnalyzer {
     document.head.appendChild(style);
 
     const text = document.createElement('span');
-    text.textContent = 'AI analyzing...';
+    text.textContent = 'Analyzing...';
 
     indicator.appendChild(spinner);
     indicator.appendChild(text);
@@ -427,14 +427,109 @@ class PageAnalyzer {
   }
 
   /**
-   * Show center modal intervention popup
+   * Show center modal intervention popup - Redesigned to match sidebar theme
    */
-  showInterventionModal(evaluation, goal) {
+  async showInterventionModal(evaluation, goal) {
     // Remove existing modal
     const existing = document.getElementById('focus-assistant-modal');
     if (existing) {
       existing.remove();
     }
+
+    // Get current theme from storage
+    let theme = 'default';
+    try {
+      const result = await chrome.storage.local.get(['theme']);
+      theme = result.theme || 'default';
+    } catch (error) {
+      console.log('[Focus Assistant] Could not load theme, using default');
+    }
+
+    // Define theme colors
+    const themeColors = {
+      default: {
+        bg: '#faf9f8',
+        itemBg: '#ffffff',
+        border: '#e1dfdd',
+        borderDark: '#d1d1d6',
+        heroBg: '#e3f2fd',
+        textPrimary: '#323130',
+        textSecondary: '#605e5c',
+        textTertiary: '#8a8886',
+        accent: '#0078d4',
+        accentHover: '#106ebe',
+        accentLight: 'rgba(0, 120, 212, 0.1)',
+        warning: '#ff8c00',
+        warningBg: '#fff3cd',
+        warningBorder: '#ffc107'
+      },
+      ocean: {
+        bg: '#f0f4f8',
+        itemBg: '#ffffff',
+        border: '#d0dae5',
+        borderDark: '#b0c4de',
+        heroBg: '#e0f2fe',
+        textPrimary: '#1e293b',
+        textSecondary: '#475569',
+        textTertiary: '#64748b',
+        accent: '#0284c7',
+        accentHover: '#0369a1',
+        accentLight: 'rgba(2, 132, 199, 0.1)',
+        warning: '#0891b2',
+        warningBg: '#cffafe',
+        warningBorder: '#06b6d4'
+      },
+      forest: {
+        bg: '#f1f5f0',
+        itemBg: '#ffffff',
+        border: '#d4e3d0',
+        borderDark: '#a8c9a0',
+        heroBg: '#dcfce7',
+        textPrimary: '#1e3a1e',
+        textSecondary: '#3d5a3d',
+        textTertiary: '#5a7a5a',
+        accent: '#16a34a',
+        accentHover: '#15803d',
+        accentLight: 'rgba(22, 163, 74, 0.1)',
+        warning: '#16a34a',
+        warningBg: '#dcfce7',
+        warningBorder: '#22c55e'
+      },
+      sunset: {
+        bg: '#fef3f2',
+        itemBg: '#ffffff',
+        border: '#fecaca',
+        borderDark: '#fca5a5',
+        heroBg: '#ffe4e6',
+        textPrimary: '#3f1f1f',
+        textSecondary: '#7c2d2d',
+        textTertiary: '#a84848',
+        accent: '#dc2626',
+        accentHover: '#b91c1c',
+        accentLight: 'rgba(220, 38, 38, 0.1)',
+        warning: '#ea580c',
+        warningBg: '#ffedd5',
+        warningBorder: '#fb923c'
+      },
+      amber: {
+        bg: '#fefce8',
+        itemBg: '#ffffff',
+        border: '#fde68a',
+        borderDark: '#fcd34d',
+        heroBg: '#fef3c7',
+        textPrimary: '#3f2f1f',
+        textSecondary: '#78350f',
+        textTertiary: '#92400e',
+        accent: '#d97706',
+        accentHover: '#b45309',
+        accentLight: 'rgba(217, 119, 6, 0.1)',
+        warning: '#d97706',
+        warningBg: '#fef3c7',
+        warningBorder: '#f59e0b'
+      }
+    };
+
+    const colors = themeColors[theme] || themeColors.default;
 
     // Create modal overlay
     const overlay = document.createElement('div');
@@ -445,7 +540,7 @@ class PageAnalyzer {
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(4px);
       z-index: 2147483647;
       display: flex;
@@ -457,14 +552,15 @@ class PageAnalyzer {
     // Create modal content
     const modal = document.createElement('div');
     modal.style.cssText = `
-      background: white;
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 500px;
+      background: ${colors.itemBg};
+      border-radius: 0px;
+      border: 2px solid ${colors.borderDark};
+      max-width: 520px;
       width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       animation: slideIn 0.3s ease-out;
+      overflow: hidden;
     `;
 
     modal.innerHTML = `
@@ -478,129 +574,205 @@ class PageAnalyzer {
           to { transform: translateY(0); opacity: 1; }
         }
       </style>
-      <div style="text-align: center; margin-bottom: 24px;">
-        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-        <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 600; color: #1a1a1a;">
-          Possible Distraction Detected
-        </h2>
-        <p style="margin: 0; font-size: 14px; color: #666;">
-          This page might not be related to your current goal
-        </p>
-      </div>
       
-      <div style="background: #f5f5f5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-        <div style="font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-          Your Goal
-        </div>
-        <div style="font-size: 16px; color: #1a1a1a; font-weight: 500;">
-          ${goal.text}
-        </div>
-      </div>
-      
-      <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px 16px; margin-bottom: 24px; border-radius: 4px;">
-        <div style="font-size: 14px; color: #e65100;">
-          <strong>Reason:</strong> ${evaluation.reason}
-        </div>
-      </div>
-      
-      <div style="display: flex; gap: 12px;">
-        <button id="focus-assistant-back-btn" style="
-          flex: 1;
-          padding: 14px 24px;
-          background: #1976d2;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s;
-          height: auto;
-          min-height: 48px;
-          line-height: normal;
-          box-sizing: border-box;
-        ">
-          Back to Goal
-        </button>
-        <button id="focus-assistant-relevant-btn" style="
-          flex: 1;
-          padding: 14px 24px;
-          background: white;
-          color: #1976d2;
-          border: 2px solid #1976d2;
-          border-radius: 8px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-          height: auto;
-          min-height: 48px;
-          line-height: normal;
-          box-sizing: border-box;
-        ">
-          It's Relevant
-        </button>
-      </div>
-      
-      <button id="focus-assistant-dismiss-btn" style="
-        width: 100%;
-        margin-top: 12px;
-        padding: 10px;
-        background: transparent;
-        color: #999;
-        border: none;
-        font-size: 13px;
-        cursor: pointer;
-        transition: color 0.2s;
-        height: auto;
-        min-height: 36px;
-        line-height: normal;
-        box-sizing: border-box;
+      <!-- Header Section with theme-inspired gradient -->
+      <div style="
+        background: ${colors.heroBg};
+        padding: 24px;
+        border-bottom: 1px solid ${colors.border};
       ">
-        Dismiss
-      </button>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="
+              font-size: 32px;
+              line-height: 1;
+            ">⚠️</div>
+            <div>
+              <h2 style="
+                margin: 0;
+                font-size: 20px;
+                font-weight: 600;
+                color: ${colors.textPrimary};
+                line-height: 1.3;
+              ">Distraction Detected</h2>
+              <p style="
+                margin: 4px 0 0 0;
+                font-size: 13px;
+                color: ${colors.textSecondary};
+                line-height: 1.4;
+              ">This page may not align with your goal</p>
+            </div>
+          </div>
+          <button id="focus-assistant-close-btn" style="
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: none;
+            background: rgba(0, 0, 0, 0.05);
+            color: ${colors.textSecondary};
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 0px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          ">✕</button>
+        </div>
+      </div>
+      
+      <!-- Content Section -->
+      <div style="padding: 24px;">
+        <!-- Goal Card -->
+        <div style="
+          background: ${colors.bg};
+          border: 1px solid ${colors.border};
+          border-radius: 0px;
+          padding: 16px;
+          margin-bottom: 16px;
+        ">
+          <div style="
+            font-size: 11px;
+            font-weight: 600;
+            color: ${colors.textTertiary};
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+          ">Your Active Goal</div>
+          <div style="
+            font-size: 15px;
+            color: ${colors.textPrimary};
+            font-weight: 500;
+            line-height: 1.5;
+          ">${goal.text}</div>
+        </div>
+        
+        <!-- Reason Card -->
+        <div style="
+          background: ${colors.warningBg};
+          border: 1px solid ${colors.warningBorder};
+          border-left: 3px solid ${colors.warning};
+          border-radius: 0px;
+          padding: 14px 16px;
+          margin-bottom: 24px;
+        ">
+          <div style="
+            font-size: 14px;
+            color: ${colors.textPrimary};
+            line-height: 1.6;
+          ">
+            <span style="font-weight: 600;">Reason:</span> ${evaluation.reason}
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+          <button id="focus-assistant-back-btn" style="
+            flex: 1;
+            padding: 12px 20px;
+            background: ${colors.accent};
+            color: white;
+            border: none;
+            border-radius: 0px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+          ">Back to Goal</button>
+          <button id="focus-assistant-relevant-btn" style="
+            flex: 1;
+            padding: 12px 20px;
+            background: ${colors.itemBg};
+            color: ${colors.textPrimary};
+            border: 1px solid ${colors.border};
+            border-radius: 0px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+          ">It's Relevant</button>
+        </div>
+        
+        <button id="focus-assistant-dismiss-btn" style="
+          width: 100%;
+          padding: 10px;
+          background: transparent;
+          color: ${colors.textTertiary};
+          border: none;
+          font-size: 13px;
+          cursor: pointer;
+          transition: color 0.2s;
+          font-family: inherit;
+        ">Dismiss</button>
+      </div>
     `;
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Add hover effects
+    // Get button references
+    const closeBtn = modal.querySelector('#focus-assistant-close-btn');
     const backBtn = modal.querySelector('#focus-assistant-back-btn');
     const relevantBtn = modal.querySelector('#focus-assistant-relevant-btn');
     const dismissBtn = modal.querySelector('#focus-assistant-dismiss-btn');
 
+    // Add hover effects matching sidebar theme
+    closeBtn.addEventListener('mouseenter', () => {
+      closeBtn.style.background = 'rgba(0, 0, 0, 0.1)';
+      closeBtn.style.color = colors.textPrimary;
+    });
+    closeBtn.addEventListener('mouseleave', () => {
+      closeBtn.style.background = 'rgba(0, 0, 0, 0.05)';
+      closeBtn.style.color = colors.textSecondary;
+    });
+
     backBtn.addEventListener('mouseenter', () => {
-      backBtn.style.background = '#1565c0';
+      backBtn.style.background = colors.accentHover;
+      backBtn.style.transform = 'scale(0.98)';
     });
     backBtn.addEventListener('mouseleave', () => {
-      backBtn.style.background = '#1976d2';
+      backBtn.style.background = colors.accent;
+      backBtn.style.transform = 'scale(1)';
     });
 
     relevantBtn.addEventListener('mouseenter', () => {
-      relevantBtn.style.background = '#e3f2fd';
+      relevantBtn.style.background = colors.bg;
+      relevantBtn.style.borderColor = colors.accent;
+      relevantBtn.style.transform = 'scale(0.98)';
     });
     relevantBtn.addEventListener('mouseleave', () => {
-      relevantBtn.style.background = 'white';
+      relevantBtn.style.background = colors.itemBg;
+      relevantBtn.style.borderColor = colors.border;
+      relevantBtn.style.transform = 'scale(1)';
     });
 
     dismissBtn.addEventListener('mouseenter', () => {
-      dismissBtn.style.color = '#666';
+      dismissBtn.style.color = colors.textSecondary;
     });
     dismissBtn.addEventListener('mouseleave', () => {
-      dismissBtn.style.color = '#999';
+      dismissBtn.style.color = colors.textTertiary;
     });
 
     // Button handlers
+    const closeModal = () => {
+      overlay.style.opacity = '0';
+      modal.style.transform = 'translateY(-20px)';
+      setTimeout(() => overlay.remove(), 200);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+
     backBtn.addEventListener('click', () => {
-      // Send message to background to navigate back to goal
       chrome.runtime.sendMessage({
         type: 'NAVIGATE_TO_GOAL'
       });
-      overlay.remove();
+      closeModal();
     });
 
     relevantBtn.addEventListener('click', () => {
-      // Send feedback that it's relevant
       chrome.runtime.sendMessage({
         type: 'SUBMIT_FEEDBACK',
         data: {
@@ -609,24 +781,22 @@ class PageAnalyzer {
           systemScore: evaluation.score
         }
       });
-      overlay.remove();
+      closeModal();
     });
 
-    dismissBtn.addEventListener('click', () => {
-      overlay.remove();
-    });
+    dismissBtn.addEventListener('click', closeModal);
 
     // Click overlay to dismiss
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
-        overlay.remove();
+        closeModal();
       }
     });
 
     // ESC key to dismiss
     const escHandler = (e) => {
       if (e.key === 'Escape') {
-        overlay.remove();
+        closeModal();
         document.removeEventListener('keydown', escHandler);
       }
     };
